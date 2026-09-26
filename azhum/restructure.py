@@ -24,16 +24,44 @@ _ALWAYS_COMMON = {
 }
 
 
-def set_known_lower(words):
-    global KNOWN_LOWER
+DOC_PROPER = set()
+PROPER_LIST = set("""azərbaycan bakı gəncə sumqayıt naxçıvan şuşa xankəndi lənkəran şəki mingəçevir şirvan qarabağ türkiyə rusiya gürcüstan
+iran irak ukrayna almaniya fransa ingiltərə britaniya amerika abş çin yaponiya hindistan avropa asiya afrika avstraliya
+şərq qərb mars yupiter saturn venera merkuri neptun uran allah quran bibliya islam xristianlıq atatürk nizami füzuli
+nəsimi vaqif səməd ağa əliyev heydər ilham dünya birləşmiş millətlər nato avroparlament aran kür araz xəzər qafqaz""".split())
+_SURNAME_SUFFIXES = ("ov", "ova", "ev", "eva", "yev", "yeva", "zadə", "oğlu", "qızı", "ski", "dze", "yan", "ian")
+
+
+def set_known_lower(words, proper=()):
+    global KNOWN_LOWER, DOC_PROPER
     KNOWN_LOWER = set(words)
+    DOC_PROPER = set(proper)
 
 
-def can_lowercase_first(word: str) -> bool:
+def looks_proper(word: str, next_word: str = "") -> bool:
+    w = az_lower(word.strip(",.;:!?\"«»()"))
+    if not w:
+        return True
+    if w in DOC_PROPER or w in PROPER_LIST:
+        return True
+    if any(ch.isdigit() for ch in w) or "-" in w:
+        return True
+    if len(word) > 1 and word.isupper():
+        return True
+    if next_word and is_upper_char(next_word[:1]):
+        return True
+    return w.endswith(_SURNAME_SUFFIXES) and len(w) > 4
+
+
+def can_lowercase_first(word: str, next_word: str = "") -> bool:
+    """Cümlə başındakı sözü kiçik hərflə yazmaq təhlükəsizdirmi (xüsusi ad DEYİL)?"""
     w = az_lower(word.strip(",.;:!?\"«»()"))
     if not w:
         return False
-    return w in KNOWN_LOWER or w in _ALWAYS_COMMON
+    if w in _ALWAYS_COMMON or w in KNOWN_LOWER:
+        return w not in DOC_PROPER
+    return not looks_proper(word, next_word)
+
 
 SPLIT_CONJUNCTIONS = [" və ", ", lakin ", ", amma ", ", ancaq ", ", buna görə ", ", ona görə ki ", ", eləcə də ", ", habelə "]
 
@@ -103,6 +131,9 @@ FALSE_POSITIVES = {
 }
 
 FRONTED_MARKER_RE = re.compile(r"^" + W + r"[^\W\d_'-]*(?:\s+" + W + r"[^\W\d_]*){0,3},", re.UNICODE)
+
+
+_OWN_SUBJECT_STARTS = {"bu", "o", "onlar", "bunlar", "həmin", "onun", "bunun", "biz", "siz", "mən", "sən", "belə", "elə"}
 
 
 def has_unbalanced_open_paren(text_before: str) -> bool:
@@ -206,6 +237,8 @@ def collect_split_candidates(sentence: str, conjunctions=None):
                 continue
             if not is_strong_finite(right.rstrip(".!?… ").split()[-1]):
                 continue  # sağ klauz da öz felinə malik olmalıdır
+            if conj.strip() == "və" and az_lower(right.split()[0].strip(",")) not in _OWN_SUBJECT_STARTS:
+                continue  # "və" ilə bölünən sağ klauzun öz subyekti açıq olmalıdır (əks halda subyekt itir)
             cands.append({"conj": conj, "left": left, "right": right, "imb": abs(count_words(left) - count_words(right))})
     return cands
 
@@ -305,7 +338,7 @@ def try_merge(a: str, b: str, rng):
         return None
     if has_no_likely_predicate(a, []) or has_no_likely_predicate(b, []):
         return None
-    if a.count(" və ") + b.count(" və ") >= 2 or a.count(";") + b.count(";") >= 1:
+    if a.count(" və ") + b.count(" və ") >= 4 or a.count(";") + b.count(";") >= 1:
         return None
     a0 = a.rstrip()
     if a0[-1:] in ".!?…":
@@ -315,7 +348,8 @@ def try_merge(a: str, b: str, rng):
     b_low = az_uncap(b)
     if len(first) > 1 and first.isupper():
         b_low = b
-    if not can_lowercase_first(first):
+    second = b.split()[1] if len(b.split()) > 1 else ""
+    if not can_lowercase_first(first, second):
         return None  # xüsusi ad ola bilər — kiçik hərflə yazmaq səhv olar
     if low_first in ("lakin", "amma", "ancaq"):
         rest = b[len(first):].lstrip()
@@ -398,7 +432,7 @@ def move_mid_adverbial_front(sentence: str, rng):
                     return None
                 if is_capitalized(first) and len(rest) > 1 and False:
                     return None
-                if not can_lowercase_first(first):
+                if not can_lowercase_first(first, rest[1] if len(rest) > 1 else ""):
                     return None
                 rest[0] = az_uncap(first)
                 return az_cap(adv) + ", " + " ".join(rest) + end
@@ -443,3 +477,87 @@ def swap_pair_order(sentence: str, rng):
             new_b = az_uncap(new_b)
         return sentence[:m.start()] + new_a + " və " + new_b + sentence[m.end():]
     return None
+
+
+# ---------------------------------------------------------------- yeni üsullar
+_BIRI_RE = re.compile(r"(?<![\w-])(" + W + r"*?(?:lərindən|larından|lərdən|lardan)) biridir(?![\w-])", re.UNICODE)
+_DIR_RE = re.compile(r"(?<![\w-])(" + W + r"*?(?:lərindən|larından|lərdən|lardan))(dir|dır)(?![\w-])", re.UNICODE)
+
+
+def biri_dir_toggle(sentence: str, rng):
+    """"əsas sahələrindən biridir" <-> "əsas sahələrindəndir" (eyni mənalı iki forma)."""
+    m = _BIRI_RE.search(sentence)
+    if m:
+        w = m.group(1)
+        last_v = [c for c in az_lower(w) if c in "aeıioöuüə"][-1]
+        suf = "dır" if last_v in "aıou" else "dir"
+        return sentence[:m.start()] + w + suf + sentence[m.end():]
+    m = _DIR_RE.search(sentence)
+    if m:
+        return sentence[:m.start()] + m.group(1) + " biridir" + sentence[m.end():]
+    return None
+
+
+def _canon_suffix(word: str) -> str:
+    w = az_lower(word)[-2:]
+    return w.replace("ə", "a").replace("ı", "i").replace("u", "i").replace("ü", "i")
+
+
+_HEM_RE = re.compile(r"(?<![\w-])həm ([^,;:.()]+?), həm də ([^,;:.()]+)", re.IGNORECASE | re.UNICODE)
+
+
+def swap_hem_hem_de(sentence: str, rng):
+    """"həm A, həm də B" -> "həm B, həm də A" (paylaşılan xəbər saxlanılır)."""
+    m = _HEM_RE.search(sentence)
+    if not m:
+        return None
+    x = m.group(1).strip()
+    rest = m.group(2).split(" ")
+    x_words = x.split(" ")
+    if len(x_words) > 6:
+        return None
+    target = _canon_suffix(x_words[-1])
+    end = None
+    for i, w in enumerate(rest[:8]):
+        if _canon_suffix(w) == target and len(w) > 3:
+            end = i
+            break
+    if end is None:
+        return None
+    y = " ".join(rest[:end + 1])
+    tail = " ".join(rest[end + 1:])
+    if not tail:
+        return None
+    if count_words(y) > 7 or is_upper_char(y[0]) or is_upper_char(x[0]):
+        return None
+    if sentence[m.start():m.start() + 3].lower() != "həm":
+        return None
+    return sentence[:m.start()] + "həm " + y + ", həm də " + x + " " + tail + sentence[m.end():]
+
+
+def permute_list_inner(sentence: str, rng):
+    """"..., A, B, C, D və E ..." — daxili elementlərin (B, C, D) sırası dəyişir."""
+    m = re.search(r"((?:[^,;:()]{2,45}, ){3,7})([^,;:()]{2,45}) və ", sentence)
+    if not m:
+        return None
+    items = [x for x in m.group(1).split(", ") if x != ""]
+    if len(items) < 3:
+        return None
+    inner = items[1:]
+    if any(count_words(x) > 3 or count_words(x) < 1 for x in inner):
+        return None
+    if any(not x or is_upper_char(x[0]) for x in inner):
+        return None
+    if any(is_strong_finite(w) for x in inner for w in x.split()):
+        return None
+    if len(set(x.lower() for x in inner)) != len(inner):
+        return None
+    shuffled = inner[:]
+    for _ in range(6):
+        rng.shuffle(shuffled)
+        if shuffled != inner:
+            break
+    if shuffled == inner:
+        return None
+    new_seg = items[0] + ", " + ", ".join(shuffled) + ", "
+    return sentence[:m.start(1)] + new_seg + sentence[m.end(1):]

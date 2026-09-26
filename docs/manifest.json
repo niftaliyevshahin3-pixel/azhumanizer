@@ -1,6 +1,7 @@
 {
  "py": [
   "py/azhum/__init__.py",
+  "py/azhum/cli.py",
   "py/azhum/discourse.py",
   "py/azhum/engine.py",
   "py/azhum/guards.py",
@@ -14,10 +15,12 @@
   "py/azhum/web_api.py"
  ],
  "data": [
+  "data/lex_econ.txt",
   "data/lex_extra.txt",
   "data/lex_general.txt",
   "data/lex_verbs.txt",
-  "data/phrases_az.txt"
+  "data/phrases_az.txt",
+  "data/phrases_gen.txt"
  ],
- "version": "1.0"
+ "version": "1790414690"
 }

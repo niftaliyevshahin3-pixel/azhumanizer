@@ -19,9 +19,9 @@ from .textutil import (
 
 # --------------------------------------------------------------- güc səviyyələri
 LEVELS = {
-    "light": {"lex": 0.28, "phrase": 0.55, "struct": 0.15, "cv_lo": 0.42, "cv_hi": 0.70, "opener": 0.5, "drop": 0.30, "rhythm_ops": 0.35},
-    "balanced": {"lex": 0.50, "phrase": 0.85, "struct": 0.30, "cv_lo": 0.52, "cv_hi": 0.78, "opener": 0.75, "drop": 0.45, "rhythm_ops": 0.60},
-    "strong": {"lex": 0.75, "phrase": 1.00, "struct": 0.45, "cv_lo": 0.60, "cv_hi": 0.90, "opener": 0.95, "drop": 0.55, "rhythm_ops": 0.85},
+    "light": {"lex": 0.40, "phrase": 0.70, "struct": 0.25, "ops": 1, "cv_lo": 0.42, "cv_hi": 0.70, "opener": 0.6, "drop": 0.30, "rhythm_ops": 0.35, "lexcap": 0.6, "merge_min": 11, "merge_sum": 32},
+    "balanced": {"lex": 0.70, "phrase": 0.95, "struct": 0.45, "ops": 2, "cv_lo": 0.52, "cv_hi": 0.78, "opener": 0.85, "drop": 0.45, "rhythm_ops": 0.60, "lexcap": 0.85, "merge_min": 13, "merge_sum": 36},
+    "strong": {"lex": 0.95, "phrase": 1.00, "struct": 0.70, "ops": 3, "cv_lo": 0.60, "cv_hi": 0.90, "opener": 1.0, "drop": 0.55, "rhythm_ops": 0.90, "lexcap": 1.0, "merge_min": 16, "merge_sum": 44},
 }
 
 BRIDGES_VE = [
@@ -185,7 +185,7 @@ def lexical_substitute(sess: Session, sentence: str, sent_index_in_par: int):
     replaced = 0
     edits = []
     # bir cümlədə həddən çox əvəzləmə etmə
-    max_per_sentence = 1 + int(len(matches) * 0.7)
+    max_per_sentence = max(1, int(round(len(matches) * sess.p["lexcap"])))
     order = list(range(len(matches)))
     sess.rng.shuffle(order)
     for mi in order:
@@ -218,6 +218,22 @@ def lexical_substitute(sess: Session, sentence: str, sent_index_in_par: int):
             gap_ok = all(t[0] == "s" for t in toks[m.end + 1:m.end + 2])
             if nxt_w and gap_ok and len(nxt_w) >= 5 and az_lower(nxt_w)[-1] in "ıiuü" and not is_capitalized(nxt_w):
                 continue
+        # izafet başı: "tədiyə balansı", "bazar dəyəri" — sabit termin; yalnız sərbəst birləşmədə
+        # (əvvəlində təyin hal / sifət) əvəz olunur
+        if m.entry.kind == "n" and any(k[1] == 3 and k[2] in ("", "acc", "dat", "loc", "abl", "gen") for k in m.keys if isinstance(k, tuple) and len(k) == 4) and (0, 0, "", 0) not in m.keys:
+            prev_w = None
+            for t in reversed(toks[:m.start]):
+                if t[0] == "w":
+                    prev_w = t[1]
+                    break
+                if t[0] not in ("s",):
+                    break
+            if prev_w:
+                pl = az_lower(prev_w)
+                genitive = pl.endswith(("ın", "in", "un", "ün", "nın", "nin", "nun", "nün"))
+                adj_known = (("b", (pl,)) in lx.entries)
+                if not (genitive or adj_known or pl in rs._ALWAYS_COMMON):
+                    continue
         # sifət: sonrakı söz bağlayıcı/xəbər olmasın
         if m.entry.kind == "b":
             nxt = next((t[1] for t in toks[m.end + 1:] if t[0] == "w"), None)
@@ -264,16 +280,22 @@ def lexical_substitute(sess: Session, sentence: str, sent_index_in_par: int):
 
 # ============================================================ mərhələ: struktur
 def structural_variation(sess: Session, sentence: str):
-    if sess.rng.random() > sess.p["struct"]:
-        return sentence
-    ops = [rs.toggle_intro_comma, rs.move_mid_adverbial_front, rs.swap_pair_order]
+    out = sentence
+    ops = [rs.toggle_intro_comma, rs.move_mid_adverbial_front, rs.swap_pair_order, rs.biri_dir_toggle,
+           rs.swap_hem_hem_de, rs.permute_list_inner]
     sess.rng.shuffle(ops)
+    done = 0
     for op in ops:
-        r = op(sentence, sess.rng)
-        if r and r != sentence:
-            sess.log("structure", sentence, r)
-            return r
-    return sentence
+        if done >= sess.p["ops"]:
+            break
+        if sess.rng.random() > sess.p["struct"]:
+            continue
+        r = op(out, sess.rng)
+        if r and r != out:
+            sess.log("structure", out, r)
+            out = r
+            done += 1
+    return out
 
 
 # ============================================================ mərhələ: ritm (böl / birləşdir)
@@ -317,7 +339,7 @@ def shape_rhythm(sess: Session, sents, context_lens):
         # bölmə namizədləri
         for i, s in enumerate(cur):
             if count_words(s) >= 17:
-                sp = rs.try_split(s, sess.rng, bridge_prob=0.10, bridge_pool=sess.bridge)
+                sp = rs.try_split(s, sess.rng, bridge_prob=0.03, bridge_pool=sess.bridge)
                 if sp and all(count_words(x) >= 4 for x in sp):
                     candidates.append(("split", i, sp))
         # birləşdirmə namizədləri
@@ -325,8 +347,8 @@ def shape_rhythm(sess: Session, sents, context_lens):
             a, b = cur[i], cur[i + 1]
             if a in merged_seen or b in merged_seen:
                 continue
-            if count_words(a) <= 11 or count_words(b) <= 11:
-                if count_words(a) + count_words(b) <= 32:
+            if min(count_words(a), count_words(b)) <= sess.p["merge_min"]:
+                if count_words(a) + count_words(b) <= sess.p["merge_sum"]:
                     mg = rs.try_merge(a, b, sess.rng)
                     if mg:
                         candidates.append(("merge", i, mg))
@@ -557,7 +579,12 @@ def _prime_known_lower(res, text):
     for w in words_of(text):
         if w and not is_upper_char(w[0]):
             lows.add(az_lower(w))
-    rs.set_known_lower(lows)
+    proper = set()
+    for sent in re.split(r"(?<=[.!?…])\s+", text):
+        for w in words_of(sent)[1:]:
+            if w and is_upper_char(w[0]) and len(w) > 1:
+                proper.add(az_lower(w))
+    rs.set_known_lower(lows, proper)
 
 
 def _is_prose(line: str) -> bool:

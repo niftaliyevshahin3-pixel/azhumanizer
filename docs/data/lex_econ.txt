@@ -1,0 +1,32 @@
+# İqtisadiyyat / maliyyə / ümumi akademik mətnlər üçün əlavə klasterlər (əmin olunan cütlər).
+# Birləşmə terminləri baş sözün lüğət formasında yazılır: "faiz dərəcə" = "faiz dərəcəsi" və s.
+
+n: faiz dərəcə = faiz nisbət
+n: dövlət xərc = dövlət məsrəf
+n: tədiyə balans = ödəniş balans
+n: alıcılıq qabiliyyət = satınalma qabiliyyət
+n: həyat səviyyə = yaşayış səviyyə
+n: fəallıq = aktivlik
+n: iqtisadi fəallıq = iqtisadi aktivlik
+
+a: genişmiqyaslı = geniş miqyaslı
+a: uzunmüddətli = uzun müddətli
+a: qısamüddətli = qısa müddətli
+a: orta müddətli = ortamüddətli
+
+d: davamlı şəkildə = fasiləsiz şəkildə
+d: nəticədə = bunun nəticəsində
+d: vasitəsilə = yolu ilə
+
+v: artmaq = yüksəlmək
+v: azalmaq = aşağı düşmək
+v: yaranmaq = meydana gəlmək
+v: yüksəltmək = qaldırmaq
+v: azaltmaq = aşağı salmaq
+v: səbəb olmaq = gətirib çıxarmaq
+v: imkan vermək = imkan yaratmaq
+v: xarakterizə olunmaq = səciyyələnmək
+v: xarakterizə olunmaq = xarakterizə edilmək
+v: ifadə etmək = bildirmək
+v: həyata keçirilmək = reallaşdırılmaq
+v: həyata keçirmək = reallaşdırmaq

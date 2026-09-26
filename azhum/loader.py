@@ -12,6 +12,8 @@ def load_resources(data_dir=None):
     for p in sorted(glob.glob(os.path.join(data_dir, "lex_*.txt"))):
         with io.open(p, encoding="utf8") as fh:
             texts.append(fh.read())
-    with io.open(os.path.join(data_dir, "phrases_az.txt"), encoding="utf8") as fh:
-        phrases = fh.read()
+    phrases = ""
+    for p in sorted(glob.glob(os.path.join(data_dir, "phrases_*.txt"))):
+        with io.open(p, encoding="utf8") as fh:
+            phrases += fh.read() + "\n"
     return Resources(texts, phrases)

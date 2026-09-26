@@ -15,7 +15,8 @@ async function boot() {
   let phrases = "";
   for (const f of manifest.data) {
     const txt = await (await fetch(f + "?v=" + manifest.version)).text();
-    if (f.endsWith("phrases_az.txt")) phrases = txt;
+    if (/phrases_.*\.txt$/.test(f)) phrases += txt + "
+";
     else if (/lex_.*\.txt$/.test(f)) lex.push(txt);
   }
   py.globals.set("LEX_JSON", JSON.stringify(lex));

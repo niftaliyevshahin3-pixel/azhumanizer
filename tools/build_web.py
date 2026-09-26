@@ -27,7 +27,8 @@ for p in sorted(glob.glob(os.path.join(ROOT, "data_src", "*.txt"))):
     shutil.copy(p, os.path.join(data_dst, name))
     data_files.append("data/" + name)
 
-manifest = {"py": py_files, "data": data_files, "version": "1.0"}
+import time
+manifest = {"py": py_files, "data": data_files, "version": str(int(time.time()))}
 with io.open(os.path.join(WEB, "manifest.json"), "w", encoding="utf8") as fh:
     json.dump(manifest, fh, indent=1)
 print("web ready:", len(py_files), "py,", len(data_files), "data")
