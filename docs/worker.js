@@ -16,8 +16,7 @@ async function boot() {
   let det = "";
   for (const f of manifest.data) {
     const txt = await (await fetch(f + "?v=" + manifest.version)).text();
-    if (/phrases_.*\.txt$/.test(f)) phrases += txt + "
-";
+    if (/phrases_.*\.txt$/.test(f)) phrases += txt + "\n";
     else if (/lex_.*\.txt$/.test(f)) lex.push(txt);
     else if (f.endsWith("detector.json")) det = txt;
   }
