@@ -197,7 +197,7 @@ const SAMPLE = "Texnologiyanın sürətli inkişafı insan sivilizasiyasını ta
 const KIND_LABEL = {word:"Söz əvəzi", phrase:"İfadə əvəzi", split:"Uzun cümlə bölündü", merge:"Cümlələr birləşdi", structure:"Söz sırası / durğu", opener_swap:"Başlanğıc bağlayıcı dəyişdi", opener_drop:"Artıq bağlayıcı silindi", subject_drop:"Təkrar subyekt silindi", subject_pronoun:"Təkrar subyekt əvəzliklə", filler_drop:"Doldurucu söz silindi"};
 const FEAT_TXT = {cv:"cümlə uzunluqları çox bərabərdir", near_median:"cümlələrin çoxu eyni uzunluqdadır", par_share:"ardıcıl cümlələr eyni ölçüdədir", ttr:"söz müxtəlifliyi qeyri-təbii bərabərdir", ai_markers:"AI-yə xas klişe ifadələr var", comma_std:"vergül istifadəsi monotondur", dash_rate:"tire/ara söz yoxdur", share_short:"qısa cümlə yoxdur", end_cop:"cümlələrin çoxu eyni şəkilçi ilə bitir (-dır/-dir)", paren_rate:"mötərizə/izah yoxdur", comma_per:"vergül sıxlığı bərabərdir", rep_first:"cümlələr eyni sözlərlə başlayır", share_long:"uzun cümlə yoxdur", rep_bigram:"başlanğıc söz cütləri təkrarlanır", conn_share:"bağlayıcı ilə başlayan cümlələr çoxdur"};
 
-const worker = new Worker("worker.js");
+const worker = new Worker("worker.js?v=" + Date.now());
 let seq = 0, pending = {}, lastSeed = 1, ready = false, lastResult = null;
 worker.onmessage = (ev) => {
   const m = ev.data;
