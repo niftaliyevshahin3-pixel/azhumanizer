@@ -13,19 +13,22 @@ async function boot() {
   }
   const lex = [];
   let phrases = "";
+  let det = "";
   for (const f of manifest.data) {
     const txt = await (await fetch(f + "?v=" + manifest.version)).text();
     if (/phrases_.*\.txt$/.test(f)) phrases += txt + "
 ";
     else if (/lex_.*\.txt$/.test(f)) lex.push(txt);
+    else if (f.endsWith("detector.json")) det = txt;
   }
   py.globals.set("LEX_JSON", JSON.stringify(lex));
   py.globals.set("PHRASES", phrases);
+  py.globals.set("DET_JSON", det);
   const info = await py.runPythonAsync(`
 import sys, json
 sys.path.insert(0, "/app")
 from azhum import web_api
-web_api.init(LEX_JSON, PHRASES)
+web_api.init(LEX_JSON, PHRASES, DET_JSON)
 `);
   return JSON.parse(info);
 }
@@ -44,13 +47,14 @@ onmessage = async (ev) => {
       py.globals.set("IN_SEED", m.seed);
       py.globals.set("IN_CAND", m.candidates);
       py.globals.set("IN_PROT", JSON.stringify(m.protected || []));
+      py.globals.set("IN_TARGET", m.target || 10);
       const out = await py.runPythonAsync(
-        "web_api.run(IN_TEXT, IN_LEVEL, int(IN_SEED), int(IN_CAND), IN_PROT)"
+        "web_api.run(IN_TEXT, IN_LEVEL, int(IN_SEED), int(IN_CAND), IN_PROT, float(IN_TARGET))"
       );
       postMessage({ type: "result", id: m.id, data: JSON.parse(out) });
     } else if (m.type === "score") {
       py.globals.set("IN_TEXT", m.text);
-      const out = await py.runPythonAsync("web_api.score_only(IN_TEXT)");
+      const out = await py.runPythonAsync("web_api.check_only(IN_TEXT)");
       postMessage({ type: "score", id: m.id, data: JSON.parse(out) });
     }
   } catch (e) {

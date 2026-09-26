@@ -8,7 +8,7 @@ import random
 import re
 from collections import Counter
 
-from . import discourse, guards, metrics, restructure as rs
+from . import detector, discourse, guards, metrics, restructure as rs
 from .guards import PH_OPEN, PH_CLOSE
 from .lexicon import Lexicon
 from .phrases import PhraseTable, OPENER_GROUPS, detect_opener, ai_phrase_regexes
@@ -19,6 +19,7 @@ from .textutil import (
 
 # --------------------------------------------------------------- güc səviyyələri
 LEVELS = {
+    "max": {"lex": 1.0, "phrase": 1.00, "struct": 0.90, "ops": 4, "cv_lo": 0.70, "cv_hi": 1.00, "opener": 1.0, "drop": 0.65, "rhythm_ops": 1.2, "lexcap": 1.0, "merge_min": 18, "merge_sum": 48},
     "light": {"lex": 0.40, "phrase": 0.70, "struct": 0.25, "ops": 1, "cv_lo": 0.42, "cv_hi": 0.70, "opener": 0.6, "drop": 0.30, "rhythm_ops": 0.35, "lexcap": 0.6, "merge_min": 11, "merge_sum": 32},
     "balanced": {"lex": 0.70, "phrase": 0.95, "struct": 0.45, "ops": 2, "cv_lo": 0.52, "cv_hi": 0.78, "opener": 0.85, "drop": 0.45, "rhythm_ops": 0.60, "lexcap": 0.85, "merge_min": 13, "merge_sum": 36},
     "strong": {"lex": 0.95, "phrase": 1.00, "struct": 0.70, "ops": 3, "cv_lo": 0.60, "cv_hi": 0.90, "opener": 1.0, "drop": 0.55, "rhythm_ops": 0.90, "lexcap": 1.0, "merge_min": 16, "merge_sum": 44},
@@ -65,7 +66,9 @@ class Change:
 
 
 class Resources:
-    def __init__(self, lexicon_texts, phrases_text):
+    def __init__(self, lexicon_texts, phrases_text, detector_json=None):
+        if detector_json:
+            detector.load_model(detector_json)
         self.lexicon = Lexicon.from_texts(lexicon_texts)
         self.phrases = PhraseTable.from_text(phrases_text)
         self.ai_regexes = ai_phrase_regexes(self.phrases)
@@ -254,6 +257,13 @@ def lexical_substitute(sess: Session, sentence: str, sent_index_in_par: int):
                 if 0 <= j < len(toks) and toks[j][0] == "w":
                     neigh.append(az_lower(toks[j][1]))
             if az_lower(realized.split()[-1]) in neigh or az_lower(realized.split()[0]) in neigh:
+                continue
+            # eyni kökdən qonşu söz ("əhəmiyyətli əhəmiyyət") yaranmasın
+            rl = az_lower(realized.split()[-1])
+            if len(rl) >= 6 and any(len(nw) >= 6 and nw[:6] == rl[:6] for nw in neigh):
+                continue
+            rf = az_lower(realized.split()[0])
+            if len(rf) >= 6 and any(len(nw) >= 6 and nw[:6] == rf[:6] for nw in neigh):
                 continue
             options.append(realized)
         if not options:
@@ -594,13 +604,51 @@ def _is_prose(line: str) -> bool:
     return count_words(s) >= 6
 
 
+def _similarity(a: str, b: str) -> float:
+    import difflib
+    ta = re.findall(r"\w+", az_lower(a))
+    tb = re.findall(r"\w+", az_lower(b))
+    return difflib.SequenceMatcher(None, ta, tb, autojunk=False).ratio()
+
+
 def humanize(res: Resources, text: str, level="balanced", seed=1, protected_terms=None, candidates=6, opts=None):
-    """Bir neçə seed ilə işləyir, ən aşağı AI-skorlu (və təhlükəsizlik keçən) variantı seçir."""
+    """Bir neçə seed ilə işləyir, ən aşağı struktur-AI riskli (və təhlükəsizlik keçən) variantı seçir."""
     best = None
     for k in range(max(1, candidates)):
         r = humanize_once(res, text, level, seed + k * 7919, protected_terms, opts)
         n_changes = len([c for c in r.changes if not c.kind.startswith("skipped")])
-        key = (r.after["score"], -n_changes)
+        key = (round(detector.percent(r.text, 50.0, "struct"), 2), -n_changes)
         if best is None or key < best[0]:
             best = (key, r)
     return best[1]
+
+
+def humanize_to_target(res: Resources, text: str, target=10.0, level="strong", seed=1, protected_terms=None,
+                       candidates=6, max_rounds=4, min_similarity=0.40, min_change=None):
+    """Struktur-AI riski hədəfə (%) çatana və dəyişiklik miqdarı kifayət edənə qədər çox mərhələli işləyir.
+    Hər mərhələdə əvvəlki nəticə yenidən emal olunur; orijinaldan həddindən artıq uzaqlaşma (mənanı
+    qorumaq üçün) min_similarity ilə məhdudlaşdırılır. Nəticə: hədəfə çatanlar arasında ən çox dəyişəni."""
+    if min_change is None:
+        min_change = {"light": 0.10, "balanced": 0.18, "strong": 0.25, "max": 0.33}[level]
+    orig_pct = detector.percent(text, 50.0, "struct")
+    history = [{"round": 0, "struct": round(orig_pct, 1)}]
+    levels = {"light": ["light", "balanced"], "balanced": ["balanced", "strong"], "strong": ["strong", "strong", "max"], "max": ["max", "max", "max"]}[level]
+    rounds = []
+    cur = text
+    for rnd in range(1, max_rounds + 1):
+        lv = levels[min(rnd - 1, len(levels) - 1)]
+        r = humanize(res, cur, lv, seed + rnd * 104729, protected_terms, candidates)
+        pct = detector.percent(r.text, 50.0, "struct")
+        sim = _similarity(text, r.text)
+        history.append({"round": rnd, "level": lv, "struct": round(pct, 1), "similarity": round(sim, 2)})
+        if sim < min_similarity:
+            break  # orijinaldan çox uzaqlaşdı — dayan
+        rounds.append((r.text, r, pct, sim))
+        cur = r.text
+        if pct <= target and (1 - sim) >= min_change:
+            break
+    if not rounds:
+        return text, None, history
+    ok = [x for x in rounds if x[2] <= target]
+    pick = min(ok, key=lambda x: x[3]) if ok else min(rounds, key=lambda x: x[2])
+    return pick[0], pick[1], history

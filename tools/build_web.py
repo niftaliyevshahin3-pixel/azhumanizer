@@ -22,7 +22,7 @@ for p in sorted(glob.glob(os.path.join(ROOT, "azhum", "*.py"))):
     py_files.append("py/azhum/" + name)
 
 data_files = []
-for p in sorted(glob.glob(os.path.join(ROOT, "data_src", "*.txt"))):
+for p in sorted(glob.glob(os.path.join(ROOT, "data_src", "*.txt")) + glob.glob(os.path.join(ROOT, "data_src", "*.json"))):
     name = os.path.basename(p)
     shutil.copy(p, os.path.join(data_dst, name))
     data_files.append("data/" + name)

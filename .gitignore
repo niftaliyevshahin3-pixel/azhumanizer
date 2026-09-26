@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 tests/_*
 node_modules/
+tests/user*.txt

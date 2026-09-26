@@ -243,6 +243,37 @@ def collect_split_candidates(sentence: str, conjunctions=None):
     return cands
 
 
+START_CONJ = ["bu isə", "nəticədə", "beləliklə", "həmçinin", "bununla belə", "buna görə də", "ona görə də",
+              "eyni zamanda", "bundan başqa", "üstəlik", "habelə", "məsələn", "buna baxmayaraq", "bunun nəticəsində"]
+
+
+def collect_startconj_candidates(sentence: str):
+    """"X edir, bu isə Y edir." -> "X edir. Bu isə Y edir." (bağlayıcı yeni cümləni açır)."""
+    cands = []
+    for conj in START_CONJ:
+        for tail in (" ", ","):
+            pat = ", " + conj + tail
+            start = 0
+            while True:
+                idx = sentence.find(pat, start)
+                if idx == -1:
+                    break
+                start = idx + len(pat)
+                if idx <= 10 or idx >= len(sentence) - 12:
+                    continue
+                before = sentence[:idx]
+                if has_unbalanced_open_paren(before) or _has_open_quote(before) or is_short_list_segment(before):
+                    continue
+                if not is_strong_finite(before.split()[-1]):
+                    continue
+                right = sentence[idx + 2:].strip()
+                if has_no_likely_predicate(right, []) or not is_strong_finite(right.rstrip(".!?… ").split()[-1]):
+                    continue
+                left = before.strip()
+                cands.append({"type": "startconj", "left": left, "right": right, "imb": abs(count_words(left) - count_words(right))})
+    return cands
+
+
 def collect_ki_candidates(sentence: str):
     cands = []
     pat = " ki,"
@@ -301,7 +332,8 @@ def _end(s: str) -> str:
 
 def try_split(sentence: str, rng, bridge_prob=0.0, bridge_pool=None):
     """Ən çox uzunluq kontrastı yaradan etibarlı nöqtədə bölür. [a, b] ya None."""
-    cands = collect_split_candidates(sentence) + collect_ki_candidates(sentence) + collect_semicolon_candidates(sentence)
+    cands = (collect_split_candidates(sentence) + collect_ki_candidates(sentence) + collect_semicolon_candidates(sentence)
+             + collect_startconj_candidates(sentence))
     if not cands:
         return None
     cands.sort(key=lambda c: -c["imb"])
@@ -311,7 +343,7 @@ def try_split(sentence: str, rng, bridge_prob=0.0, bridge_pool=None):
     left = _end(best["left"])
     right = best["right"]
     right_cap = az_cap(right)
-    if best.get("type") in ("ki", "semi"):
+    if best.get("type") in ("ki", "semi", "startconj"):
         return [left, _end(right_cap)]
     conj = best["conj"].strip().lstrip(",").strip()
     key = az_lower(conj)

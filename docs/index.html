@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Redaktor — Azərbaycan mətni üçün humanizer</title>
-<meta name="description" content="Azərbaycan dilində mətni süni intellektsiz, qayda və lüğət əsasında təbiiləşdirir. Brauzerdə işləyir, mətn heç yerə göndərilmir.">
+<meta name="description" content="Azərbaycan dilində mətni süni intellektsiz, qayda və lüğət əsasında təbiiləşdirir və AI-oxşarlığı yoxlayır. Brauzerdə işləyir, mətn heç yerə göndərilmir.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
@@ -32,24 +32,26 @@
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);padding-inline:clamp(16px,4vw,48px);padding-block:0 64px}
 .wrap{max-width:1240px;margin:0 auto}
-header{padding-block:32px 20px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between}
+header{padding-block:32px 16px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between}
 h1{font:600 clamp(34px,5vw,54px)/1.02 var(--serif);letter-spacing:-.01em;margin:0}
 h1 small{display:block;font:500 13px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-.lede{max-width:56ch;color:var(--ink-2);margin:10px 0 0}
+.lede{max-width:60ch;color:var(--ink-2);margin:10px 0 0}
 .status{font:400 13px/1.4 var(--mono);color:var(--ink-2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
 .dot.ok{background:var(--good)}
 .themebtn{border:1px solid var(--line-2);background:var(--panel);color:var(--ink);border-radius:6px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.tabs{display:flex;gap:6px;margin:8px 0 16px}
+.tabs button{padding:8px 16px;font-size:14px;font-weight:600}
+.tabs button[aria-selected=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 main{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
 @media (max-width:900px){main{grid-template-columns:1fr}}
 .pane{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-width:0}
 .pane-h{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .pane-h h2{margin:0;font:600 13px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
-textarea#src,#out{width:100%;min-height:380px;padding:16px;border:0;background:transparent;color:var(--ink);font:400 16px/1.7 var(--sans);resize:vertical;outline:none}
-#out{white-space:pre-wrap;overflow-wrap:anywhere;min-height:380px}
+textarea{width:100%;min-height:380px;padding:16px;border:0;background:transparent;color:var(--ink);font:400 16px/1.7 var(--sans);resize:vertical;outline:none}
+#out,#chk-view{white-space:pre-wrap;overflow-wrap:anywhere;min-height:380px;padding:16px;line-height:1.7}
 #out mark{background:var(--mark);color:inherit;border-bottom:2px solid var(--mark-line);border-radius:2px;cursor:help;padding:0 1px}
 #out.plain mark{background:none;border-bottom:0}
-#out del{display:none}
 .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px 16px;padding:14px 16px;border-top:1px solid var(--line)}
 label{display:flex;flex-direction:column;gap:5px;font:500 12px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
 select,input[type=text],input[type=range]{font:400 15px var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--line-2);border-radius:6px;padding:8px 10px;min-width:0;width:100%}
@@ -61,20 +63,21 @@ button:disabled{opacity:.5;cursor:progress}
 button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .count{font:400 13px var(--mono);color:var(--ink-2);margin-left:auto}
 .tog{display:flex;align-items:center;gap:8px;font:400 14px var(--sans);text-transform:none;letter-spacing:0;color:var(--ink);flex-direction:row}
-section.report{margin-top:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
+section.report{margin-top:20px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
 @media (max-width:900px){section.report{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
 .card h3{margin:0 0 12px;font:600 13px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
-.scores{display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap}
-.big{font:600 56px/1 var(--serif);font-variant-numeric:tabular-nums}
-.big small{font:400 13px var(--mono);color:var(--ink-2);display:block;margin-top:6px;letter-spacing:.04em}
-.arrow{font:400 28px var(--serif);color:var(--ink-2);padding-bottom:26px}
+.gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.g .lbl{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.g .val{font:600 40px/1.1 var(--serif);font-variant-numeric:tabular-nums;margin-top:4px}
+.g .val small{font:400 13px var(--mono);color:var(--ink-2)}
+.g .val em{font-style:normal;color:var(--ink-2);font-size:24px;padding:0 4px}
 .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
 .bar i{display:block;height:100%;background:var(--accent)}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
-td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar.bad i{background:var(--bad)}
+.verdict{margin:14px 0 0;padding:10px 12px;border-radius:8px;font-size:14px;border:1px solid var(--line-2);background:var(--bg)}
+.verdict.ok{border-color:var(--good)}
+.verdict.warn{border-color:var(--warn)}
 .note{font-size:13px;color:var(--ink-2);margin:12px 0 0}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .chip{background:var(--accent-soft);color:var(--ink);border-radius:20px;padding:3px 11px;font:500 13px var(--mono)}
@@ -83,16 +86,16 @@ td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:now
 .changes div:last-child{border-bottom:0}
 .changes b{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:3px}
 .changes s{color:var(--ink-2)}
-.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.tabs button{padding:6px 12px;font-size:13px;font-weight:500}
-.tabs button[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent)}
-.honest{margin-top:24px;font-size:14px;color:var(--ink-2);max-width:82ch}
+ul.reasons{margin:8px 0 0;padding-left:18px;font-size:14px}
+ul.reasons li{margin:3px 0}
+.honest{margin-top:24px;font-size:14px;color:var(--ink-2);max-width:86ch}
 .honest b{color:var(--ink)}
 footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
 .err{color:var(--bad);padding:12px 16px;font-size:14px}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.s-risk{border-radius:3px;padding:1px 0}
 </style>
 </head>
 <body>
@@ -100,18 +103,27 @@ footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
 <header>
   <div>
     <h1><small>Azərbaycan dili · AI-siz</small>Redaktor</h1>
-    <p class="lede">Mətnin cümlə ritmini, başlanğıc sözlərini və söz seçimini qrammatikanı və mənanı pozmadan dəyişir. Süni intellekt istifadə olunmur — yalnız qayda və lüğət.</p>
+    <p class="lede">Mətnin cümlə ritmini, başlanğıc sözlərini və söz seçimini qrammatikanı və mənanı pozmadan dəyişir; ayrıca AI-oxşarlıq yoxlayıcısı var. Süni intellekt istifadə olunmur — yalnız qayda, lüğət və statistik model.</p>
   </div>
   <div class="status"><span class="dot" id="dot"></span><span id="st">Mühərrik yüklənir…</span><button class="themebtn" id="theme" type="button" aria-label="Görünüşü dəyiş">Görünüş</button></div>
 </header>
 
+<div class="tabs" role="tablist">
+  <button type="button" role="tab" id="tab-h" aria-selected="true">Təbiiləşdir</button>
+  <button type="button" role="tab" id="tab-c" aria-selected="false">AI yoxlayıcı</button>
+</div>
+
+<div id="view-h">
 <main>
   <div class="pane">
     <div class="pane-h"><h2>Orijinal mətn</h2><button type="button" id="sample" class="themebtn">Nümunə mətn</button></div>
     <textarea id="src" spellcheck="false" placeholder="Mətni bura yapışdırın…"></textarea>
     <div class="controls">
       <label for="level">Güc
-        <select id="level"><option value="light">Yüngül — az dəyişiklik</option><option value="balanced">Orta</option><option value="strong" selected>Güclü — tövsiyə olunur</option></select>
+        <select id="level"><option value="light">Yüngül</option><option value="balanced">Orta</option><option value="strong">Güclü</option><option value="max" selected>Maksimum — kəskin dəyişiklik</option></select>
+      </label>
+      <label for="target">Hədəf struktur riski: ≤ <span id="targetv">10</span>%
+        <input id="target" type="range" min="3" max="30" value="10">
       </label>
       <label for="cand">Variant sayı: <span id="candv">8</span>
         <input id="cand" type="range" min="1" max="24" value="8">
@@ -126,7 +138,6 @@ footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
       <span class="count" id="cnt">0 söz</span>
     </div>
   </div>
-
   <div class="pane">
     <div class="pane-h"><h2>Nəticə</h2>
       <label class="tog"><input type="checkbox" id="hl" checked> Dəyişənləri göstər</label>
@@ -141,13 +152,15 @@ footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
 
 <section class="report" id="report" hidden>
   <div class="card">
-    <h3>Daxili AI-oxşarlıq göstəricisi</h3>
-    <div class="scores">
-      <div class="big" id="sb">—<small>əvvəl</small></div><div class="arrow">→</div><div class="big" id="sa">—<small>sonra</small></div>
+    <h3>AI-oxşarlıq (Redaktor yoxlayıcısı)</h3>
+    <div class="gauges">
+      <div class="g"><div class="lbl">Struktur / üslub riski</div><div class="val" id="g-struct">—</div><div class="bar"><i id="b-struct" style="width:0"></i></div></div>
+      <div class="g"><div class="lbl">Konkretlik riski</div><div class="val" id="g-content">—</div><div class="bar bad"><i id="b-content" style="width:0"></i></div></div>
+      <div class="g"><div class="lbl">Orijinala oxşarlıq</div><div class="val" id="g-sim">—</div><div class="bar"><i id="b-sim" style="width:0"></i></div></div>
     </div>
-    <div class="bar" aria-hidden="true"><i id="bar" style="width:0"></i></div>
-    <p class="note"><b>Diqqət:</b> bu, StrikePlagiarism və ya digər xarici detektorun nəticəsi deyil — onların alqoritmi açıq deyil. Cümlə ritmi, başlanğıc təkrarı, klişe sıxlığı və s. üzrə proksi ölçüdür (0 = insan-oxşar, 100 = AI-oxşar). Yekun yoxlamanı öz detektorunuzda aparın.</p>
-    <table id="parts"></table>
+    <div class="verdict" id="verdict"></div>
+    <p class="note"><b>Diqqət:</b> bu yoxlayıcı StrikePlagiarism və ya başqa kommersiya detektorunun surəti deyil — onların alqoritmi açıq deyil. Azərbaycan Vikipediyası (insan) və AI mətn nümunələri üzərində təlim edilmiş statistik modeldir. "Struktur riski" cümlə ritmi, təkrar başlanğıc, klişe, durğu və s. ölçür (yenidən yazmaqla azalır). "Konkretlik riski" mətndə rəqəm, xüsusi ad, tarix, mənbə olub-olmadığına baxır (yalnız siz konkret məlumat əlavə etdikdə azalır). Yekun yoxlamanı öz detektorunuzda aparın.</p>
+    <ul class="reasons" id="reasons"></ul>
   </div>
   <div class="card">
     <h3>Nə dəyişdi</h3>
@@ -155,9 +168,25 @@ footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
     <div class="changes" id="changes"></div>
   </div>
 </section>
+</div>
 
-<p class="honest"><b>Necə işləyir.</b> Mətn brauzerinizdə (Python → Pyodide) emal olunur, heç bir serverə göndərilmir. Mühərrik çoxlu variant yaradır, hər birini mənanın qorunması yoxlamalarından (rəqəmlər, xüsusi adlar, dırnaqlı mətn, mötərizələr, uzunluq) keçirir və daxili göstəricisi ən aşağı olanı seçir. Sizdə dəyişdirilmiş sözləri yoxlamaq üçün "Dəyişənləri göstər" seçimini açıq saxlayın — sarı sözün üstünə gəldikdə orijinalı görünür.</p>
-<footer>Redaktor 1.0 · lüğət: <span id="lexinfo">…</span></footer>
+<div id="view-c" hidden>
+<main>
+  <div class="pane">
+    <div class="pane-h"><h2>Yoxlanılacaq mətn</h2><button type="button" id="sample2" class="themebtn">Nümunə mətn</button></div>
+    <textarea id="chk-src" spellcheck="false" placeholder="Mətni bura yapışdırın…"></textarea>
+    <div class="row"><button type="button" class="primary" id="chk-go" disabled>Yoxla</button><span class="count" id="chk-cnt">0 söz</span></div>
+  </div>
+  <div class="pane">
+    <div class="pane-h"><h2>Nəticə — riskli cümlələr</h2></div>
+    <div id="chk-view"></div>
+    <div class="row" id="chk-sum"></div>
+  </div>
+</main>
+</div>
+
+<p class="honest"><b>Necə işləyir.</b> Mətn brauzerinizdə (Python → Pyodide) emal olunur, heç bir serverə göndərilmir. Mühərrik çoxlu variant yaradır, hər birini mənanın qorunması yoxlamalarından (rəqəmlər, xüsusi adlar, dırnaqlı mətn, mötərizələr, uzunluq) keçirir və struktur riski ən aşağı olanı seçir; hədəfə çatmasa nəticəni yenidən emal edir (ən çox 4 mərhələ), amma orijinaldan həddindən artıq uzaqlaşmır. <b>Sərhəd:</b> rəqəm, ad, nümunə və mənbə əlavə etmədən "konkretlik riski" azalmır — bunu yalnız siz mətnə əlavə edə bilərsiniz.</p>
+<footer>Redaktor · lüğət: <span id="lexinfo">…</span></footer>
 </div>
 
 <script>
@@ -165,30 +194,28 @@ footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
 const $ = (id) => document.getElementById(id);
 const SAMPLE = "Texnologiyanın sürətli inkişafı insan sivilizasiyasını tamamilə yeni bir mərhələyə daşımışdır. Bu transformasiyanın mərkəzində isə şübhəsiz ki, süni intellekt texnologiyaları dayanır. İnsan beyninin işləmə prinsipini təqlid edən alqoritmlər artıq həyatımızın ayrılmaz hissəsidir. Süni intellekt böyük verilənlər bazasını saniyələr ərzində analiz edərək ən doğru qərarları verə bilir. Bu üstünlük biznes sahəsində fəaliyyət göstərən şirkətlərin iş səmərəliliyini dəfələrlə artırır. Bir çox rutin və mexaniki tapşırıqlar artıq tamamilə intellektual proqramlara həvalə olunmuşdur. Avtomatlaşdırma prosesi insan əməyinə olan ehtiyacı azaltsa da, yeni peşə sahələrinin yaranmasına yol açır. Müasir dövrdə məlumat mühəndisliyi və alqoritm dizaynı kimi sahələr böyük populyarlıq qazanır. Tibb sahəsində isə süni intellekt xəstəliklərin erkən diaqnostikasında inqilabi addımlar atır. Lakin bu nəhəng texnoloji sıçrayış özü ilə bərabər ciddi etik suallar da gətirir. Maşınların verdiyi qərarların məsuliyyətini kimin daşıyacağı hələ də müzakirə mövzusudur. Kibertəhlükəsizlik problemləri və şəxsi məlumatların gizliliyi müasir dünyanın ən böyük qorxusudur. Bizim vəzifəmiz bu gücü doğru və bəşəriyyətin xeyrinə istifadə etməyi öyrənməkdir.";
 
-const KIND_LABEL = {word:"Söz əvəzi", phrase:"İfadə əvəzi", split:"Uzun cümlə bölündü", merge:"Qısa cümlələr birləşdi", structure:"Söz sırası / durğu", opener_swap:"Başlanğıc bağlayıcı dəyişdi", opener_drop:"Artıq bağlayıcı silindi", subject_drop:"Təkrar subyekt silindi", subject_pronoun:"Təkrar subyekt əvəzliklə", filler_drop:"Doldurucu söz silindi"};
-const PART_LABEL = {burstiness:"Cümlə uzunluğu dəyişkənliyi", openers:"Başlanğıc sözlərin təkrarı", connectors:"Bağlayıcı ilə başlayan cümlələr", cliches:"AI klişe ifadələri", repetition:"Leksik təkrar", parallelism:"Struktur paralellik", punctuation:"Durğu monotonluğu", nominalization:"Feli isim sıxlığı"};
+const KIND_LABEL = {word:"Söz əvəzi", phrase:"İfadə əvəzi", split:"Uzun cümlə bölündü", merge:"Cümlələr birləşdi", structure:"Söz sırası / durğu", opener_swap:"Başlanğıc bağlayıcı dəyişdi", opener_drop:"Artıq bağlayıcı silindi", subject_drop:"Təkrar subyekt silindi", subject_pronoun:"Təkrar subyekt əvəzliklə", filler_drop:"Doldurucu söz silindi"};
+const FEAT_TXT = {cv:"cümlə uzunluqları çox bərabərdir", near_median:"cümlələrin çoxu eyni uzunluqdadır", par_share:"ardıcıl cümlələr eyni ölçüdədir", ttr:"söz müxtəlifliyi qeyri-təbii bərabərdir", ai_markers:"AI-yə xas klişe ifadələr var", comma_std:"vergül istifadəsi monotondur", dash_rate:"tire/ara söz yoxdur", share_short:"qısa cümlə yoxdur", end_cop:"cümlələrin çoxu eyni şəkilçi ilə bitir (-dır/-dir)", paren_rate:"mötərizə/izah yoxdur", comma_per:"vergül sıxlığı bərabərdir", rep_first:"cümlələr eyni sözlərlə başlayır", share_long:"uzun cümlə yoxdur", rep_bigram:"başlanğıc söz cütləri təkrarlanır", conn_share:"bağlayıcı ilə başlayan cümlələr çoxdur"};
 
 const worker = new Worker("worker.js");
 let seq = 0, pending = {}, lastSeed = 1, ready = false, lastResult = null;
-
 worker.onmessage = (ev) => {
   const m = ev.data;
   if (m.type === "ready") {
-    ready = true;
-    $("dot").classList.add("ok"); $("st").textContent = "Hazırdır";
+    ready = true; $("dot").classList.add("ok"); $("st").textContent = "Hazırdır";
     $("lexinfo").textContent = m.info.entries + " klaster, " + m.info.forms.toLocaleString("az") + " söz forması, " + m.info.phrases + " ifadə qaydası";
-    $("go").disabled = false; $("again").disabled = false;
+    $("go").disabled = $("again").disabled = $("chk-go").disabled = false;
   } else if (m.type === "result" || m.type === "score") {
     const p = pending[m.id]; if (p) { delete pending[m.id]; p.resolve(m.data); }
   } else if (m.type === "error") {
     if (m.id && pending[m.id]) { pending[m.id].reject(new Error(m.message)); delete pending[m.id]; }
-    else { $("st").textContent = "Xəta: " + m.message; }
+    else $("st").textContent = "Xəta: " + m.message;
   }
 };
 function call(msg) { return new Promise((resolve, reject) => { const id = ++seq; pending[id] = {resolve, reject}; worker.postMessage(Object.assign({id}, msg)); }); }
-
-function words(s) { return (s.match(/[^\W\d_]+/gu) || []).length; }
-function esc(s) { return s.replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+const words = (s) => (s.match(/[^\W\d_]+/gu) || []).length;
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = (v) => (v === null || v === undefined ? "—" : v + "%");
 
 function renderOut(res) {
   const out = $("out");
@@ -196,25 +223,26 @@ function renderOut(res) {
   let html = "";
   for (const [tag, neu, old] of res.segments) {
     if (tag === "=") html += esc(neu);
-    else if (tag === "-") html += "";
+    else if (tag === "-") continue;
     else html += '<mark title="' + (old ? "Orijinal: " + esc(old.trim()) : "Əlavə olundu") + '">' + esc(neu) + "</mark>";
   }
   out.innerHTML = html;
 }
 
-function renderReport(res) {
+function renderReport(res, target) {
   $("report").hidden = false;
-  $("sb").innerHTML = res.before.score + "<small>əvvəl</small>";
-  $("sa").innerHTML = res.after.score + "<small>sonra</small>";
-  $("bar").style.width = Math.max(2, res.after.score) + "%";
-  let t = "<tr><th>Göstərici</th><th>Əvvəl</th><th>Sonra</th><th>Ölçü</th></tr>";
-  for (const k of Object.keys(PART_LABEL)) {
-    const a = res.before.parts[k], b = res.after.parts[k];
-    if (!a || !b) continue;
-    const pa = Math.round(a.penalty * 100), pb = Math.round(b.penalty * 100);
-    t += "<tr><td>" + PART_LABEL[k] + "</td><td class='num'>" + pa + "%</td><td class='num'>" + pb + "%</td><td>" + esc(b.note) + "</td></tr>";
-  }
-  $("parts").innerHTML = t;
+  const b = res.before, a = res.after;
+  $("g-struct").innerHTML = pct(b.struct_percent) + "<em>→</em>" + pct(a.struct_percent);
+  $("b-struct").style.width = Math.max(2, a.struct_percent) + "%";
+  $("g-content").innerHTML = pct(b.content_percent) + "<em>→</em>" + pct(a.content_percent);
+  $("b-content").style.width = Math.max(2, a.content_percent) + "%";
+  $("g-sim").innerHTML = Math.round(res.similarity * 100) + "%<small> qalıb</small>";
+  $("b-sim").style.width = Math.round(res.similarity * 100) + "%";
+  const ok = a.struct_percent <= target;
+  let msg = ok ? "Struktur/üslub riski hədəfə (≤ " + target + "%) çatdı: " + a.struct_percent + "%." : "Struktur riski " + a.struct_percent + "% — hədəfə (≤ " + target + "%) çatmadı. Mətn orijinaldan daha çox uzaqlaşmasın deyə dayandırıldı; “Başqa variant” yoxlayın.";
+  if (a.content_percent > 30) msg += " Konkretlik riski " + a.content_percent + "%: mətndə rəqəm, xüsusi ad, tarix, mənbə və ya nümunə azdır. Bu yenidən yazmaqla azalmır — öz konkret məlumatınızı əlavə edin.";
+  const v = $("verdict"); v.textContent = msg; v.className = "verdict " + (ok && a.content_percent <= 30 ? "ok" : "warn");
+  $("reasons").innerHTML = (a.reasons || []).map((r) => "<li>" + (FEAT_TXT[r.feature] || r.feature) + "</li>").join("");
   $("chips").innerHTML = Object.entries(res.kinds).map(([k, n]) => '<span class="chip">' + (KIND_LABEL[k] || k) + ": " + n + "</span>").join("");
   $("changes").innerHTML = res.changes.map((c) => "<div><b>" + (KIND_LABEL[c.kind] || c.kind) + "</b>" + (c.before.length > 90 || c.after.length > 90 ? "<s>" + esc(c.before) + "</s><br>" : "<s>" + esc(c.before) + "</s> → ") + esc(c.after) + "</div>").join("");
 }
@@ -222,34 +250,61 @@ function renderReport(res) {
 async function run(seed) {
   if (!ready) return;
   const text = $("src").value;
-  if (words(text) < 5) { $("out").textContent = "Ən azı bir neçə cümlə daxil edin."; return; }
+  if (words(text) < 12) { $("out").textContent = "Ən azı bir neçə cümlə daxil edin."; return; }
   $("go").disabled = $("again").disabled = true;
-  $("go").innerHTML = '<span class="spin"></span>İşlənir…';
-  $("st").textContent = "İşlənir…";
+  $("go").innerHTML = '<span class="spin"></span>İşlənir…'; $("st").textContent = "İşlənir…";
   await new Promise((r) => setTimeout(r, 30));
   try {
     const prot = $("prot").value.split(",").map((s) => s.trim()).filter(Boolean);
     lastSeed = seed;
-    const res = await call({type: "run", text, level: $("level").value, seed, candidates: +$("cand").value, protected: prot});
+    const target = +$("target").value;
+    const res = await call({type: "run", text, level: $("level").value, seed, candidates: +$("cand").value, protected: prot, target});
     lastResult = res;
-    renderOut(res); renderReport(res);
+    renderOut(res); renderReport(res, target);
     $("copy").disabled = false;
-    $("cnt2").textContent = words(res.text) + " söz · seed " + res.seed;
+    $("cnt2").textContent = words(res.text) + " söz · " + Math.round((1 - res.similarity) * 100) + "% dəyişib";
     $("out").classList.toggle("plain", !$("hl").checked);
     $("st").textContent = "Hazırdır";
   } catch (e) {
-    $("out").innerHTML = '<div class="err">Xəta: ' + esc(e.message) + "</div>";
-    $("st").textContent = "Xəta";
+    $("out").innerHTML = '<div class="err">Xəta: ' + esc(e.message) + "</div>"; $("st").textContent = "Xəta";
   } finally {
     $("go").disabled = $("again").disabled = false; $("go").textContent = "Təbiiləşdir";
   }
 }
 
+async function runCheck() {
+  const text = $("chk-src").value;
+  if (words(text) < 12) { $("chk-view").textContent = "Ən azı bir neçə cümlə daxil edin."; return; }
+  $("chk-go").disabled = true;
+  try {
+    const r = await call({type: "score", text});
+    if (r.percent === null) { $("chk-view").textContent = r.note; return; }
+    let html = "";
+    for (const s of r.sentences) {
+      const a = Math.min(0.75, s.risk);
+      html += '<span class="s-risk" style="background:rgba(214,64,52,' + a.toFixed(2) + ')" title="Cümlə riski: ' + Math.round(s.risk * 100) + '%">' + esc(s.text) + "</span> ";
+    }
+    $("chk-view").innerHTML = html;
+    $("chk-sum").innerHTML = "<span><b>Ümumi: " + r.percent + "%</b> · struktur " + r.struct_percent + "% · konkretlik " + r.content_percent + "%</span>" + (r.reasons.length ? '<span class="count">' + r.reasons.map((x) => FEAT_TXT[x.feature] || x.feature).join("; ") + "</span>" : "");
+  } catch (e) { $("chk-view").innerHTML = '<div class="err">Xəta: ' + esc(e.message) + "</div>"; }
+  finally { $("chk-go").disabled = false; }
+}
+
+function tab(which) {
+  const h = which === "h";
+  $("view-h").hidden = !h; $("view-c").hidden = h;
+  $("tab-h").setAttribute("aria-selected", h); $("tab-c").setAttribute("aria-selected", !h);
+}
+$("tab-h").onclick = () => tab("h"); $("tab-c").onclick = () => tab("c");
 $("go").onclick = () => run(1);
 $("again").onclick = () => run(lastSeed + 101);
+$("chk-go").onclick = runCheck;
 $("sample").onclick = () => { $("src").value = SAMPLE; $("cnt").textContent = words(SAMPLE) + " söz"; };
+$("sample2").onclick = () => { $("chk-src").value = SAMPLE; $("chk-cnt").textContent = words(SAMPLE) + " söz"; };
 $("src").oninput = () => { $("cnt").textContent = words($("src").value) + " söz"; };
+$("chk-src").oninput = () => { $("chk-cnt").textContent = words($("chk-src").value) + " söz"; };
 $("cand").oninput = () => { $("candv").textContent = $("cand").value; };
+$("target").oninput = () => { $("targetv").textContent = $("target").value; };
 $("hl").onchange = () => $("out").classList.toggle("plain", !$("hl").checked);
 $("copy").onclick = async () => {
   if (!lastResult) return;
