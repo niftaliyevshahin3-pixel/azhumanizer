@@ -36,11 +36,18 @@ def _diff_segments(a: str, b: str):
     return segs
 
 
-def run(text: str, level: str = "strong", seed: int = 1, candidates: int = 6, protected_json: str = "[]", target: float = 10.0):
+def run(text: str, level: str = "strong", seed: int = 1, candidates: int = 6, protected_json: str = "[]", target: float = 10.0, fmt: str = "plain"):
     protected = json.loads(protected_json)
     out_text, r, history = engine.humanize_to_target(
         _RES, text, target=float(target), level=level, seed=int(seed), protected_terms=protected,
         candidates=int(candidates), max_rounds=4)
+    if fmt == "dash":
+        from .textutil import split_sentences
+        lines = []
+        for ln in out_text.split("\n"):
+            if ln.strip():
+                lines.extend("\u2013 " + x for x in split_sentences(ln))
+        out_text = "\n".join(lines)
     kinds = {}
     changes = []
     if r is not None:

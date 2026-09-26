@@ -47,8 +47,9 @@ onmessage = async (ev) => {
       py.globals.set("IN_CAND", m.candidates);
       py.globals.set("IN_PROT", JSON.stringify(m.protected || []));
       py.globals.set("IN_TARGET", m.target || 10);
+      py.globals.set("IN_FMT", m.fmt || "plain");
       const out = await py.runPythonAsync(
-        "web_api.run(IN_TEXT, IN_LEVEL, int(IN_SEED), int(IN_CAND), IN_PROT, float(IN_TARGET))"
+        "web_api.run(IN_TEXT, IN_LEVEL, int(IN_SEED), int(IN_CAND), IN_PROT, float(IN_TARGET), IN_FMT)"
       );
       postMessage({ type: "result", id: m.id, data: JSON.parse(out) });
     } else if (m.type === "score") {

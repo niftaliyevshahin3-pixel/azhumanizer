@@ -125,6 +125,9 @@ footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
       <label for="target">Hədəf struktur riski: ≤ <span id="targetv">10</span>%
         <input id="target" type="range" min="3" max="30" value="10">
       </label>
+      <label for="fmt">Format
+        <select id="fmt"><option value="plain" selected>Adi mətn</option><option value="dash">Siyahı: hər cümlə “– ” ilə ayrı sətirdə</option></select>
+      </label>
       <label for="cand">Variant sayı: <span id="candv">8</span>
         <input id="cand" type="range" min="1" max="24" value="8">
       </label>
@@ -159,7 +162,7 @@ footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
       <div class="g"><div class="lbl">Orijinala oxşarlıq</div><div class="val" id="g-sim">—</div><div class="bar"><i id="b-sim" style="width:0"></i></div></div>
     </div>
     <div class="verdict" id="verdict"></div>
-    <p class="note"><b>Diqqət:</b> bu yoxlayıcı StrikePlagiarism və ya başqa kommersiya detektorunun surəti deyil — onların alqoritmi açıq deyil. Azərbaycan Vikipediyası (insan) və AI mətn nümunələri üzərində təlim edilmiş statistik modeldir. "Struktur riski" cümlə ritmi, təkrar başlanğıc, klişe, durğu və s. ölçür (yenidən yazmaqla azalır). "Konkretlik riski" mətndə rəqəm, xüsusi ad, tarix, mənbə olub-olmadığına baxır (yalnız siz konkret məlumat əlavə etdikdə azalır). Yekun yoxlamanı öz detektorunuzda aparın. <b>Real ölçmə (undetectable.ai, 2026-09-26):</b> yalnız cümlə strukturunu dəyişən variantın nəticəsi dəyişmədi (76% → 75%), ağır söz əvəzləməsi 55%-ə saldı, Vikipediya insan mətni isə 5% aldı — yəni bu detektor daxili "struktur riski"nə deyil, söz seçiminə və mətnin "hamar"lığına reaksiya verir; buna görə daxili göstəriciyə tam güvənməyin.</p>
+    <p class="note"><b>Diqqət:</b> bu yoxlayıcı StrikePlagiarism və ya başqa kommersiya detektorunun surəti deyil — onların alqoritmi açıq deyil. Azərbaycan Vikipediyası (insan) və AI mətn nümunələri üzərində təlim edilmiş statistik modeldir. "Struktur riski" cümlə ritmi, təkrar başlanğıc, klişe, durğu və s. ölçür (yenidən yazmaqla azalır). "Konkretlik riski" mətndə rəqəm, xüsusi ad, tarix, mənbə olub-olmadığına baxır (yalnız siz konkret məlumat əlavə etdikdə azalır). Yekun yoxlamanı öz detektorunuzda aparın. <b>Real ölçmə (undetectable.ai, 2026-09-26):</b> yalnız cümlə strukturunu dəyişən variantın nəticəsi dəyişmədi (76% → 75%), ağır söz əvəzləməsi 55%-ə saldı, Vikipediya insan mətni isə 5% aldı — yəni bu detektor daxili "struktur riski"nə deyil, söz seçiminə və mətnin "hamar"lığına reaksiya verir; buna görə daxili göstəriciyə tam güvənməyin. Sonrakı ölçmələr: hər cümləni “– ” ilə ayrı sətirdə yazmaq eyni mətnin skorunu 80% → 59% saldı; lakin uzun mətndə (17+ cümlə) ən yaxşı nəticə 45–54% oldu, 7 cümləlik hissədə isə əl ilə dərin yenidən yazma + siyahı formatı 21% verdi — nəticə mətndən çox asılıdır və 20%-ə güvənli çatmaq mümkün olmadı.</p>
     <ul class="reasons" id="reasons"></ul>
   </div>
   <div class="card">
@@ -258,7 +261,7 @@ async function run(seed) {
     const prot = $("prot").value.split(",").map((s) => s.trim()).filter(Boolean);
     lastSeed = seed;
     const target = +$("target").value;
-    const res = await call({type: "run", text, level: $("level").value, seed, candidates: +$("cand").value, protected: prot, target});
+    const res = await call({type: "run", text, level: $("level").value, seed, candidates: +$("cand").value, protected: prot, target, fmt: $("fmt").value});
     lastResult = res;
     renderOut(res); renderReport(res, target);
     $("copy").disabled = false;
