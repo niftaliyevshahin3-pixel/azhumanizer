@@ -1,0 +1,304 @@
+# Format:  TYPE: a = b = c      (simmetrik klaster: istənilən üzv digərinə çevrilə bilər)
+#          TYPE: a > b, c        (istiqamətli: a -> b və ya c, əksinə yox)
+# TYPE:  n  isim (tam şəkilçi dəstəyi)   n!  isim (yalnız çılpaq forma)
+#        a  sifət (çılpaq)               d   zərf/bağlayıcı sözlər (çılpaq)
+#        v  fel (məsdər forması; idarəetmə eyni olmalıdır)
+# Yalnız MƏNANI və İDARƏETMƏNİ dəyişməyən, akademik registrdə qarşılıqlı əvəz oluna
+# bilən cütlər daxil edilib. Şübhəli cütlər QƏSDƏN buraya salınmayıb.
+
+# ------------------------------------------------------------------ SİFƏTLƏR
+a: mühüm = vacib = əhəmiyyətli
+a: zəruri = vacib
+a: gərəkli = zəruri
+a: əlverişli = münasib
+a: müasir = çağdaş
+a: müxtəlif = fərqli
+a: əhatəli = hərtərəfli
+a: ətraflı = təfərrüatlı
+a: səmərəli = effektiv
+a: faydalı = yararlı = xeyirli
+a: məşhur = tanınmış
+a: xarakterik = səciyyəvi
+a: əsas > başlıca
+a: başlıca > əsas
+a: cari = hazırkı
+a: qeyri-müəyyən = mübhəm
+a: neytral = tərəfsiz
+a: bənzər = oxşar
+a: məqbul = qənaətbəxş
+a: mənfi = neqativ
+a: müsbət = pozitiv
+a: fəal = aktiv
+a: sistemli = nizamlı
+a: uğurlu = müvəffəqiyyətli
+a: əsl = həqiqi
+a: qabaqcıl = öncül
+a: yenilikçi = innovativ
+a: praktik = əməli
+a: nəzəri = teorik
+a: bəşəri = ümumbəşəri
+a: qiymətli = dəyərli
+a: mükəmməl = kamil
+a: müvafiq = uyğun
+a: münasib = uyğun
+a: mötədil = mülayim
+a: konservativ = mühafizəkar
+a: elastik = çevik
+a: funksional = işlək
+a: genetik = irsi
+a: infeksion = yoluxucu
+a: letal = ölümcül
+a: toksiki = zəhərli
+a: profilaktik = önləyici
+a: didaktik = öyrədici
+a: naşı = təcrübəsiz
+a: icbari = məcburi
+a: ixtiyari = könüllü
+a: kompakt = yığcam
+a: mobil = portativ
+a: rentabelli = sərfəli = gəlirli
+a: mütənasib = proporsional
+a: münbit = məhsuldar
+a: qeyri-orqanik = qeyri-üzvi
+a: dünyəvi = laik
+a: günahkar = təqsirkar
+
+# ------------------------------------------------------------ ZƏRFLƏR / SÖZLƏR
+d: xüsusilə = xüsusən
+d: bilavasitə = birbaşa
+d: həqiqətən = doğrudan da
+d: müntəzəm = mütəmadi
+d: əsasən = başlıca olaraq
+d: ümumilikdə = bütövlükdə = ümumən
+d: bəzən = hərdən = ara-sıra = vaxtaşırı
+d: tez-tez > çox vaxt
+d: çox vaxt > tez-tez
+d: yenidən = təkrar
+d: tamamilə = büsbütün = bütünlüklə
+d: yalnız = ancaq = təkcə
+d: bununla belə = buna baxmayaraq
+d: məsələn = misal üçün
+d: həmçinin = bundan başqa
+d: bunun əksinə = əksinə
+d: sonradan = daha sonra
+d: əvvəlcə = ilkin olaraq
+d: ilk növbədə = ilk öncə
+d: yəqin ki = ehtimal ki
+d: geniş şəkildə = geniş miqyasda
+d: qismən = müəyyən dərəcədə
+d: açıq-aydın = aşkar şəkildə
+
+# --------------------------------------------------------------------- İSİMLƏR
+n: tədqiqat = araşdırma
+n: məqsəd = hədəf
+n: problem > məsələ
+n: amil = faktor
+n: cəhət > tərəf
+n: aspekt > cəhət
+n: əhəmiyyət = önəm
+n: üsul = metod
+n: nümunə = misal
+n: mənbə = qaynaq
+n: quruluş = struktur
+n: artım = böyümə
+n: dəyişiklik = dəyişmə
+n: tələbat = ehtiyac
+n: maneə = əngəl
+n: təhlil = analiz
+n: qiymətləndirmə = dəyərləndirmə
+n: müqayisə = tutuşdurma
+n: fərziyyə = hipotez
+n: sübut = dəlil
+n: dəlil = arqument
+n: göstərici = indikator
+n: miqdar = kəmiyyət
+n: element = ünsür
+n: bacarıq = məharət
+n: nailiyyət > uğur
+n: uğur = müvəffəqiyyət
+n: fürsət > imkan
+n: sərmayə = investisiya
+n: ziyan = zərər
+n: rifah = firavanlıq
+n: yoxsulluq = kasıblıq
+n: şirkət = kompaniya
+n: əməkdaş = işçi
+n: mütəxəssis = ekspert
+n: cihaz = qurğu
+n: avadanlıq = aparatura
+n: məsuliyyət = cavabdehlik
+n: azadlıq = sərbəstlik
+n: sülh = barış
+n: müharibə = savaş
+n: qələbə = zəfər
+n: mühafizə = qoruma
+n: dəstək = yardım
+n: kömək = yardım
+n: istək = arzu
+n: niyyət = məram
+n: xəta = səhv
+n: çatışmazlıq = nöqsan
+n: qüsur = nöqsan
+n: fayda = xeyir = səmərə
+n: hörmət = ehtiram
+n: sevgi = məhəbbət
+n: kədər = qəm
+n: xoşbəxtlik = səadət
+n: həyəcan = təşviş
+n: düşüncə = təfəkkür
+n: yaddaş = hafizə
+n: hiss = duyğu
+n: ağıl = zəka
+n: tərcümə = çevirmə
+n: dilçilik = linqvistika
+n: mövzu = tema
+n: anlayış = məfhum
+n: müalicə = terapiya
+n: dərman = preparat = medikament
+n: pəhriz = diyeta
+n: qidalanma = bəslənmə
+n: dincəlmə = istirahət
+n: ünsiyyət = kommunikasiya
+n: reklam = tanıtım
+n: xərc = məsrəf
+n: tarazlıq = müvazinət = balans
+n: oxşarlıq = bənzərlik
+n: müxtəliflik = rəngarənglik = çeşidlilik
+n: nəşr = çap
+n: lider > rəhbər
+n: güc = qüvvə
+n: resurs > ehtiyat
+n: bünövrə = təməl
+n: irs = miras
+n: diaqnoz = təşxis
+n: meyl = tendensiya
+n: simptom = əlamət
+n: nişanə = əlamət
+n: köç = miqrasiya
+n: hərarət = temperatur
+n: dialekt = şivə
+n: idarəetmə = menecment
+n: izləmə = monitorinq
+n: mal = əmtəə
+n: depozit = əmanət
+n: təftiş = yoxlama
+n: canlanma = dirçəliş
+n: ortaqlıq = tərəfdaşlıq
+n: diversifikasiya = şaxələndirmə
+n: mülk = əmlak
+n: təminat = zəmanət
+n: departament = şöbə
+n: həvəsləndirmə = stimullaşdırma
+n: innovasiya = yenilik
+n: endirim = güzəşt
+n: razılaşma = saziş
+n: hesabdar = mühasib
+n: bənd = müddəa
+n: insaf = ədalət
+n: montaj = yığma
+n: titrəyiş = vibrasiya
+n: ağırlıq = çəki
+n: basqı = təzyiq
+n: radiasiya = şüalanma
+n: mikrosxem = çip
+n: motor = mühərrik
+n: mafsal = oynaq
+n: inersiya = ətalət
+n: inşaat = tikinti
+n: bina = tikili
+n: qövs = tağ
+n: urbanistika = şəhərsalma
+n: havalandırma = ventilyasiya
+n: hasar = çəpər
+n: deşmə = dəlmə
+n: akkumulyator = batareya
+n: gövdə = korpus
+n: anbar = depo
+n: işıqfor = svetofor
+n: nəmlik = rütubət
+n: modernləşdirmə = müasirləşdirmə
+n: təzad = ziddiyyət
+n: geriləmə = tənəzzül
+n: irəliləyiş = tərəqqi
+n: qəbilə = tayfa
+n: cümhuriyyət = respublika
+n: qiyam = üsyan
+n: salnamə = xronika
+n: adaptasiya = uyğunlaşma
+n: ayrı-seçkilik = diskriminasiya
+n: etibar = etimad
+n: xarakter = xasiyyət
+n: travma = zədə
+n: xəsarət = zədə
+n: konflikt = münaqişə
+n: kompromis = uzlaşma
+n: dolanışıq = güzəran
+n: urbanizasiya = şəhərləşmə
+n: çarə = əlac
+n: yenilikçilik = novatorluq
+n: məhsuldarlıq = verimlilik
+n: nüans = çalar = incəlik
+n: sələf = əcdad
+n: savad = savadlılıq
+n: gerçəklik = reallıq
+n: disfunksiya = pozğunluq
+n: ağırlaşma = fəsad
+n: ödem = şişkinlik
+n: iltihab = iltihablanma
+n: analgetik = ağrıkəsici
+n: peyvənd = vaksin
+n: obezlik = piylənmə
+n: nəfəsalma = tənəffüs
+n: enzim = ferment
+n: protein = zülal
+n: konvulsiya = qıcolma
+n: istifra = qusma
+n: diareya = ishal
+n: konstipasiya = qəbizlik
+n: dehidratasiya = susuzlaşma
+n: dərə = vadi
+n: koordinasiya = əlaqələndirmə
+n: mediasiya = vasitəçilik
+n: arqumentasiya = əsaslandırma
+n: rentabellik = gəlirlilik
+
+# ---------------------------------------------------------------------- FELLƏR
+v: bitirmək = tamamlamaq
+v: dəyərləndirmək = qiymətləndirmək
+v: nizamlamaq = tənzimləmək
+v: doğrulamaq = təsdiqləmək
+v: dəqiqləşdirmək = konkretləşdirmək
+v: bərkitmək = möhkəmləndirmək
+v: gücləndirmək = möhkəmləndirmək
+v: dartmaq = gərmək
+v: bükmək = əymək
+v: isitmək = qızdırmaq
+v: qırılmaq = sınmaq
+v: qarşılaşdırmaq = tutuşdurmaq
+v: yaratmaq = meydana gətirmək
+v: yaratmaq = əmələ gətirmək
+v: aşkar etmək = üzə çıxarmaq
+v: həyata keçirmək = icra etmək
+v: nəzərə almaq = diqqətə almaq
+v: müəyyən etmək = müəyyənləşdirmək
+v: təsdiq etmək = təsdiqləmək
+v: müqayisə etmək = tutuşdurmaq
+v: təhlil etmək = analiz etmək
+v: izah etmək = şərh etmək
+v: hesab etmək = saymaq
+v: nümayiş etdirmək = sərgiləmək
+v: təklif etmək = irəli sürmək
+v: əhatə etmək = əhatələmək
+v: formalaşdırmaq = şəkilləndirmək
+
+n: servis > xidmət
+a: neytral = qərəzsiz
+d: və ya = yaxud = ya da
+d: çünki = ona görə ki
+d: haqqında = barədə
+d: baxımdan = cəhətdən
+d: baxımından = cəhətindən
+d: vasitəsilə = vasitəsi ilə
+d: məqsədilə = məqsədi ilə
+n: informasiya > məlumat
+n: xüsusiyyət > əlamət

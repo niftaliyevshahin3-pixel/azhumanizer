@@ -1,0 +1,58 @@
+/* Pyodide işçisi: Python mühərriki brauzerdə (serversiz) işləyir — mətn heç yerə göndərilmir. */
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js");
+
+let py = null;
+
+async function boot() {
+  py = await loadPyodide();
+  const manifest = await (await fetch("manifest.json?v=" + Date.now())).json();
+  py.FS.mkdirTree("/app/azhum");
+  for (const f of manifest.py) {
+    const txt = await (await fetch(f + "?v=" + manifest.version)).text();
+    py.FS.writeFile("/app/" + f.replace(/^py\//, ""), txt);
+  }
+  const lex = [];
+  let phrases = "";
+  for (const f of manifest.data) {
+    const txt = await (await fetch(f + "?v=" + manifest.version)).text();
+    if (f.endsWith("phrases_az.txt")) phrases = txt;
+    else if (/lex_.*\.txt$/.test(f)) lex.push(txt);
+  }
+  py.globals.set("LEX_JSON", JSON.stringify(lex));
+  py.globals.set("PHRASES", phrases);
+  const info = await py.runPythonAsync(`
+import sys, json
+sys.path.insert(0, "/app")
+from azhum import web_api
+web_api.init(LEX_JSON, PHRASES)
+`);
+  return JSON.parse(info);
+}
+
+const ready = boot().then((info) => {
+  postMessage({ type: "ready", info });
+}).catch((e) => postMessage({ type: "error", message: String(e) }));
+
+onmessage = async (ev) => {
+  await ready;
+  const m = ev.data;
+  try {
+    if (m.type === "run") {
+      py.globals.set("IN_TEXT", m.text);
+      py.globals.set("IN_LEVEL", m.level);
+      py.globals.set("IN_SEED", m.seed);
+      py.globals.set("IN_CAND", m.candidates);
+      py.globals.set("IN_PROT", JSON.stringify(m.protected || []));
+      const out = await py.runPythonAsync(
+        "web_api.run(IN_TEXT, IN_LEVEL, int(IN_SEED), int(IN_CAND), IN_PROT)"
+      );
+      postMessage({ type: "result", id: m.id, data: JSON.parse(out) });
+    } else if (m.type === "score") {
+      py.globals.set("IN_TEXT", m.text);
+      const out = await py.runPythonAsync("web_api.score_only(IN_TEXT)");
+      postMessage({ type: "score", id: m.id, data: JSON.parse(out) });
+    }
+  } catch (e) {
+    postMessage({ type: "error", id: m.id, message: String(e) });
+  }
+};

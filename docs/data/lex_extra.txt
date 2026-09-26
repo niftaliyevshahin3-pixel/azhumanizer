@@ -1,0 +1,35 @@
+# Əlavə klasterlər (korpus tezlik analizindən). Yalnız əmin olunan cütlər.
+
+a: düzgün = doğru
+a: güclü = qüvvətli
+a: qlobal = dünya miqyaslı
+a: fundamental = təməl
+a: möhtəşəm = əzəmətli
+
+d: sonda = yekunda
+d: tədricən = addım-addım
+d: heç vaxt = əsla
+d: həmişə = daim
+d: daim = həmişə
+d: indi = hazırda
+d: hazırda = indi
+d: nəhayət = sonunda
+d: birgə = birlikdə
+d: birlikdə = birgə
+d: kifayət qədər = yetərincə
+
+n: mövqe = pozisiya
+n: üstünlük = üstün cəhət
+n: yardımçı = köməkçi
+
+v: qorumaq = mühafizə etmək
+v: anlamaq = başa düşmək
+v: araşdırmaq = tədqiq etmək
+v: artırmaq > yüksəltmək
+v: çatdırmaq = yetirmək
+v: yerinə yetirmək = icra etmək
+v: yerinə yetirilmək = icra edilmək
+v: təşviq etmək = həvəsləndirmək
+v: kömək etmək = yardım etmək
+v: qazanmaq > əldə etmək
+d: sadəcə = yalnız

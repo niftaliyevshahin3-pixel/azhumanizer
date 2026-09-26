@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redaktor — Azərbaycan mətni üçün humanizer</title>
+<meta name="description" content="Azərbaycan dilində mətni süni intellektsiz, qayda və lüğət əsasında təbiiləşdirir. Brauzerdə işləyir, mətn heç yerə göndərilmir.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --ink:#14181f; --ink-2:#4a5361; --line:#dde1e8; --line-2:#c9cfd9;
+  --accent:#0b6b62; --accent-ink:#ffffff; --accent-soft:#dff1ee; --mark:#fff0b8; --mark-line:#e6c84c;
+  --good:#1a7f4b; --warn:#a15c00; --bad:#b3261e;
+  --serif:"Newsreader","Iowan Old Style",Georgia,serif; --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1217; --panel:#151b22; --ink:#e8ecf2; --ink-2:#9aa5b5; --line:#262e39; --line-2:#333d4a;
+    --accent:#4fd1c0; --accent-ink:#06211e; --accent-soft:#12312d; --mark:#4a3f10; --mark-line:#8a742a;
+    --good:#58d08a; --warn:#e2a24a; --bad:#ff8a80; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1217; --panel:#151b22; --ink:#e8ecf2; --ink-2:#9aa5b5; --line:#262e39; --line-2:#333d4a;
+  --accent:#4fd1c0; --accent-ink:#06211e; --accent-soft:#12312d; --mark:#4a3f10; --mark-line:#8a742a;
+  --good:#58d08a; --warn:#e2a24a; --bad:#ff8a80; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);padding-inline:clamp(16px,4vw,48px);padding-block:0 64px}
+.wrap{max-width:1240px;margin:0 auto}
+header{padding-block:32px 20px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between}
+h1{font:600 clamp(34px,5vw,54px)/1.02 var(--serif);letter-spacing:-.01em;margin:0}
+h1 small{display:block;font:500 13px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.lede{max-width:56ch;color:var(--ink-2);margin:10px 0 0}
+.status{font:400 13px/1.4 var(--mono);color:var(--ink-2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
+.dot.ok{background:var(--good)}
+.themebtn{border:1px solid var(--line-2);background:var(--panel);color:var(--ink);border-radius:6px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+main{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-width:0}
+.pane-h{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.pane-h h2{margin:0;font:600 13px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+textarea#src,#out{width:100%;min-height:380px;padding:16px;border:0;background:transparent;color:var(--ink);font:400 16px/1.7 var(--sans);resize:vertical;outline:none}
+#out{white-space:pre-wrap;overflow-wrap:anywhere;min-height:380px}
+#out mark{background:var(--mark);color:inherit;border-bottom:2px solid var(--mark-line);border-radius:2px;cursor:help;padding:0 1px}
+#out.plain mark{background:none;border-bottom:0}
+#out del{display:none}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px 16px;padding:14px 16px;border-top:1px solid var(--line)}
+label{display:flex;flex-direction:column;gap:5px;font:500 12px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+select,input[type=text],input[type=range]{font:400 15px var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--line-2);border-radius:6px;padding:8px 10px;min-width:0;width:100%}
+input[type=range]{padding:0;height:34px;accent-color:var(--accent)}
+.row{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+button{font:600 15px var(--sans);border-radius:7px;padding:10px 18px;cursor:pointer;border:1px solid var(--line-2);background:var(--panel);color:var(--ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:progress}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.count{font:400 13px var(--mono);color:var(--ink-2);margin-left:auto}
+.tog{display:flex;align-items:center;gap:8px;font:400 14px var(--sans);text-transform:none;letter-spacing:0;color:var(--ink);flex-direction:row}
+section.report{margin-top:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
+@media (max-width:900px){section.report{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.card h3{margin:0 0 12px;font:600 13px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.scores{display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap}
+.big{font:600 56px/1 var(--serif);font-variant-numeric:tabular-nums}
+.big small{font:400 13px var(--mono);color:var(--ink-2);display:block;margin-top:6px;letter-spacing:.04em}
+.arrow{font:400 28px var(--serif);color:var(--ink-2);padding-bottom:26px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{font-size:13px;color:var(--ink-2);margin:12px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{background:var(--accent-soft);color:var(--ink);border-radius:20px;padding:3px 11px;font:500 13px var(--mono)}
+.changes{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.changes div{padding:9px 12px;border-bottom:1px solid var(--line);font-size:14px}
+.changes div:last-child{border-bottom:0}
+.changes b{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:3px}
+.changes s{color:var(--ink-2)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{padding:6px 12px;font-size:13px;font-weight:500}
+.tabs button[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent)}
+.honest{margin-top:24px;font-size:14px;color:var(--ink-2);max-width:82ch}
+.honest b{color:var(--ink)}
+footer{margin-top:36px;font:400 13px var(--mono);color:var(--ink-2)}
+.err{color:var(--bad);padding:12px 16px;font-size:14px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1><small>Azərbaycan dili · AI-siz</small>Redaktor</h1>
+    <p class="lede">Mətnin cümlə ritmini, başlanğıc sözlərini və söz seçimini qrammatikanı və mənanı pozmadan dəyişir. Süni intellekt istifadə olunmur — yalnız qayda və lüğət.</p>
+  </div>
+  <div class="status"><span class="dot" id="dot"></span><span id="st">Mühərrik yüklənir…</span><button class="themebtn" id="theme" type="button" aria-label="Görünüşü dəyiş">Görünüş</button></div>
+</header>
+
+<main>
+  <div class="pane">
+    <div class="pane-h"><h2>Orijinal mətn</h2><button type="button" id="sample" class="themebtn">Nümunə mətn</button></div>
+    <textarea id="src" spellcheck="false" placeholder="Mətni bura yapışdırın…"></textarea>
+    <div class="controls">
+      <label for="level">Güc
+        <select id="level"><option value="light">Yüngül — az dəyişiklik</option><option value="balanced" selected>Orta — tövsiyə olunur</option><option value="strong">Güclü — maksimum</option></select>
+      </label>
+      <label for="cand">Variant sayı: <span id="candv">8</span>
+        <input id="cand" type="range" min="1" max="24" value="8">
+      </label>
+      <label for="prot" style="grid-column:1/-1">Toxunulmaz terminlər (vergüllə)
+        <input id="prot" type="text" placeholder="məs. süni intellekt, Paris Sazişi">
+      </label>
+    </div>
+    <div class="row">
+      <button type="button" class="primary" id="go" disabled>Təbiiləşdir</button>
+      <button type="button" id="again" disabled>Başqa variant</button>
+      <span class="count" id="cnt">0 söz</span>
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="pane-h"><h2>Nəticə</h2>
+      <label class="tog"><input type="checkbox" id="hl" checked> Dəyişənləri göstər</label>
+    </div>
+    <div id="out" role="region" aria-live="polite" aria-label="Nəticə mətni"></div>
+    <div class="row">
+      <button type="button" id="copy" disabled>Kopyala</button>
+      <span class="count" id="cnt2"></span>
+    </div>
+  </div>
+</main>
+
+<section class="report" id="report" hidden>
+  <div class="card">
+    <h3>Daxili AI-oxşarlıq göstəricisi</h3>
+    <div class="scores">
+      <div class="big" id="sb">—<small>əvvəl</small></div><div class="arrow">→</div><div class="big" id="sa">—<small>sonra</small></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="bar" style="width:0"></i></div>
+    <p class="note"><b>Diqqət:</b> bu, StrikePlagiarism və ya digər xarici detektorun nəticəsi deyil — onların alqoritmi açıq deyil. Cümlə ritmi, başlanğıc təkrarı, klişe sıxlığı və s. üzrə proksi ölçüdür (0 = insan-oxşar, 100 = AI-oxşar). Yekun yoxlamanı öz detektorunuzda aparın.</p>
+    <table id="parts"></table>
+  </div>
+  <div class="card">
+    <h3>Nə dəyişdi</h3>
+    <div class="chips" id="chips"></div>
+    <div class="changes" id="changes"></div>
+  </div>
+</section>
+
+<p class="honest"><b>Necə işləyir.</b> Mətn brauzerinizdə (Python → Pyodide) emal olunur, heç bir serverə göndərilmir. Mühərrik çoxlu variant yaradır, hər birini mənanın qorunması yoxlamalarından (rəqəmlər, xüsusi adlar, dırnaqlı mətn, mötərizələr, uzunluq) keçirir və daxili göstəricisi ən aşağı olanı seçir. Sizdə dəyişdirilmiş sözləri yoxlamaq üçün "Dəyişənləri göstər" seçimini açıq saxlayın — sarı sözün üstünə gəldikdə orijinalı görünür.</p>
+<footer>Redaktor 1.0 · lüğət: <span id="lexinfo">…</span></footer>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const SAMPLE = "Texnologiyanın sürətli inkişafı insan sivilizasiyasını tamamilə yeni bir mərhələyə daşımışdır. Bu transformasiyanın mərkəzində isə şübhəsiz ki, süni intellekt texnologiyaları dayanır. İnsan beyninin işləmə prinsipini təqlid edən alqoritmlər artıq həyatımızın ayrılmaz hissəsidir. Süni intellekt böyük verilənlər bazasını saniyələr ərzində analiz edərək ən doğru qərarları verə bilir. Bu üstünlük biznes sahəsində fəaliyyət göstərən şirkətlərin iş səmərəliliyini dəfələrlə artırır. Bir çox rutin və mexaniki tapşırıqlar artıq tamamilə intellektual proqramlara həvalə olunmuşdur. Avtomatlaşdırma prosesi insan əməyinə olan ehtiyacı azaltsa da, yeni peşə sahələrinin yaranmasına yol açır. Müasir dövrdə məlumat mühəndisliyi və alqoritm dizaynı kimi sahələr böyük populyarlıq qazanır. Tibb sahəsində isə süni intellekt xəstəliklərin erkən diaqnostikasında inqilabi addımlar atır. Lakin bu nəhəng texnoloji sıçrayış özü ilə bərabər ciddi etik suallar da gətirir. Maşınların verdiyi qərarların məsuliyyətini kimin daşıyacağı hələ də müzakirə mövzusudur. Kibertəhlükəsizlik problemləri və şəxsi məlumatların gizliliyi müasir dünyanın ən böyük qorxusudur. Bizim vəzifəmiz bu gücü doğru və bəşəriyyətin xeyrinə istifadə etməyi öyrənməkdir.";
+
+const KIND_LABEL = {word:"Söz əvəzi", phrase:"İfadə əvəzi", split:"Uzun cümlə bölündü", merge:"Qısa cümlələr birləşdi", structure:"Söz sırası / durğu", opener_swap:"Başlanğıc bağlayıcı dəyişdi", opener_drop:"Artıq bağlayıcı silindi", subject_drop:"Təkrar subyekt silindi", subject_pronoun:"Təkrar subyekt əvəzliklə", filler_drop:"Doldurucu söz silindi"};
+const PART_LABEL = {burstiness:"Cümlə uzunluğu dəyişkənliyi", openers:"Başlanğıc sözlərin təkrarı", connectors:"Bağlayıcı ilə başlayan cümlələr", cliches:"AI klişe ifadələri", repetition:"Leksik təkrar", parallelism:"Struktur paralellik", punctuation:"Durğu monotonluğu", nominalization:"Feli isim sıxlığı"};
+
+const worker = new Worker("worker.js");
+let seq = 0, pending = {}, lastSeed = 1, ready = false, lastResult = null;
+
+worker.onmessage = (ev) => {
+  const m = ev.data;
+  if (m.type === "ready") {
+    ready = true;
+    $("dot").classList.add("ok"); $("st").textContent = "Hazırdır";
+    $("lexinfo").textContent = m.info.entries + " klaster, " + m.info.forms.toLocaleString("az") + " söz forması, " + m.info.phrases + " ifadə qaydası";
+    $("go").disabled = false; $("again").disabled = false;
+  } else if (m.type === "result" || m.type === "score") {
+    const p = pending[m.id]; if (p) { delete pending[m.id]; p.resolve(m.data); }
+  } else if (m.type === "error") {
+    if (m.id && pending[m.id]) { pending[m.id].reject(new Error(m.message)); delete pending[m.id]; }
+    else { $("st").textContent = "Xəta: " + m.message; }
+  }
+};
+function call(msg) { return new Promise((resolve, reject) => { const id = ++seq; pending[id] = {resolve, reject}; worker.postMessage(Object.assign({id}, msg)); }); }
+
+function words(s) { return (s.match(/[^\W\d_]+/gu) || []).length; }
+function esc(s) { return s.replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderOut(res) {
+  const out = $("out");
+  if (!res.segments || !res.segments.length) { out.textContent = res.text; return; }
+  let html = "";
+  for (const [tag, neu, old] of res.segments) {
+    if (tag === "=") html += esc(neu);
+    else if (tag === "-") html += "";
+    else html += '<mark title="' + (old ? "Orijinal: " + esc(old.trim()) : "Əlavə olundu") + '">' + esc(neu) + "</mark>";
+  }
+  out.innerHTML = html;
+}
+
+function renderReport(res) {
+  $("report").hidden = false;
+  $("sb").innerHTML = res.before.score + "<small>əvvəl</small>";
+  $("sa").innerHTML = res.after.score + "<small>sonra</small>";
+  $("bar").style.width = Math.max(2, res.after.score) + "%";
+  let t = "<tr><th>Göstərici</th><th>Əvvəl</th><th>Sonra</th><th>Ölçü</th></tr>";
+  for (const k of Object.keys(PART_LABEL)) {
+    const a = res.before.parts[k], b = res.after.parts[k];
+    if (!a || !b) continue;
+    const pa = Math.round(a.penalty * 100), pb = Math.round(b.penalty * 100);
+    t += "<tr><td>" + PART_LABEL[k] + "</td><td class='num'>" + pa + "%</td><td class='num'>" + pb + "%</td><td>" + esc(b.note) + "</td></tr>";
+  }
+  $("parts").innerHTML = t;
+  $("chips").innerHTML = Object.entries(res.kinds).map(([k, n]) => '<span class="chip">' + (KIND_LABEL[k] || k) + ": " + n + "</span>").join("");
+  $("changes").innerHTML = res.changes.map((c) => "<div><b>" + (KIND_LABEL[c.kind] || c.kind) + "</b>" + (c.before.length > 90 || c.after.length > 90 ? "<s>" + esc(c.before) + "</s><br>" : "<s>" + esc(c.before) + "</s> → ") + esc(c.after) + "</div>").join("");
+}
+
+async function run(seed) {
+  if (!ready) return;
+  const text = $("src").value;
+  if (words(text) < 5) { $("out").textContent = "Ən azı bir neçə cümlə daxil edin."; return; }
+  $("go").disabled = $("again").disabled = true;
+  $("go").innerHTML = '<span class="spin"></span>İşlənir…';
+  $("st").textContent = "İşlənir…";
+  await new Promise((r) => setTimeout(r, 30));
+  try {
+    const prot = $("prot").value.split(",").map((s) => s.trim()).filter(Boolean);
+    lastSeed = seed;
+    const res = await call({type: "run", text, level: $("level").value, seed, candidates: +$("cand").value, protected: prot});
+    lastResult = res;
+    renderOut(res); renderReport(res);
+    $("copy").disabled = false;
+    $("cnt2").textContent = words(res.text) + " söz · seed " + res.seed;
+    $("out").classList.toggle("plain", !$("hl").checked);
+    $("st").textContent = "Hazırdır";
+  } catch (e) {
+    $("out").innerHTML = '<div class="err">Xəta: ' + esc(e.message) + "</div>";
+    $("st").textContent = "Xəta";
+  } finally {
+    $("go").disabled = $("again").disabled = false; $("go").textContent = "Təbiiləşdir";
+  }
+}
+
+$("go").onclick = () => run(1);
+$("again").onclick = () => run(lastSeed + 101);
+$("sample").onclick = () => { $("src").value = SAMPLE; $("cnt").textContent = words(SAMPLE) + " söz"; };
+$("src").oninput = () => { $("cnt").textContent = words($("src").value) + " söz"; };
+$("cand").oninput = () => { $("candv").textContent = $("cand").value; };
+$("hl").onchange = () => $("out").classList.toggle("plain", !$("hl").checked);
+$("copy").onclick = async () => {
+  if (!lastResult) return;
+  try { await navigator.clipboard.writeText(lastResult.text); $("copy").textContent = "Kopyalandı"; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("out")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copy").textContent = "Seçildi — Ctrl+C"; }
+  setTimeout(() => ($("copy").textContent = "Kopyala"), 1800);
+};
+$("theme").onclick = () => {
+  const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch (e) {}
+};
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+$("src").value = SAMPLE; $("cnt").textContent = words(SAMPLE) + " söz";
+</script>
+</body>
+</html>

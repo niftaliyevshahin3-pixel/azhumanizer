@@ -1,0 +1,23 @@
+{
+ "py": [
+  "py/azhum/__init__.py",
+  "py/azhum/discourse.py",
+  "py/azhum/engine.py",
+  "py/azhum/guards.py",
+  "py/azhum/lexicon.py",
+  "py/azhum/loader.py",
+  "py/azhum/metrics.py",
+  "py/azhum/morph.py",
+  "py/azhum/phrases.py",
+  "py/azhum/restructure.py",
+  "py/azhum/textutil.py",
+  "py/azhum/web_api.py"
+ ],
+ "data": [
+  "data/lex_extra.txt",
+  "data/lex_general.txt",
+  "data/lex_verbs.txt",
+  "data/phrases_az.txt"
+ ],
+ "version": "1.0"
+}
