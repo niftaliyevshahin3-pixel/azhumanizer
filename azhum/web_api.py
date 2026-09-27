@@ -73,5 +73,37 @@ def run(text: str, level: str = "strong", seed: int = 1, candidates: int = 6, pr
     )
 
 
+def finalize_llm_text(original_text: str, llm_text: str, seed: int = 1, fmt: str = "plain", noise: bool = True):
+    """Serverdən (LLM-yenidənyazma addımından) qayıdan mətnə struktur/səs-küyü
+    addımını tətbiq edir. Qayda-əsaslı sinonim-əvəzləmə mərhələsindən QƏSDƏN
+    keçmir — real ölçmələr göstərdi ki, o mərhələ TTR-i (lüğət müxtəlifliyini)
+    insan mətninə əks istiqamətdə hərəkət etdirir (bax: memory
+    project_humanizer_burstiness_ceiling_proof)."""
+    out_text = llm_text
+    if noise:
+        out_text = engine.inject_typing_noise(out_text, seed=int(seed))
+    if fmt == "dash":
+        from .textutil import split_sentences
+        lines = []
+        for ln in out_text.split("\n"):
+            if ln.strip():
+                lines.extend("– " + x for x in split_sentences(ln))
+        out_text = "\n".join(lines)
+    return json.dumps(
+        {
+            "text": out_text,
+            "before": detector.check(original_text),
+            "after": detector.check(out_text),
+            "similarity": round(engine._similarity(original_text, out_text), 3),
+            "history": [],
+            "kinds": {},
+            "segments": [],
+            "changes": [],
+            "seed": int(seed),
+        },
+        ensure_ascii=False,
+    )
+
+
 def check_only(text: str):
     return json.dumps(detector.check(text), ensure_ascii=False)

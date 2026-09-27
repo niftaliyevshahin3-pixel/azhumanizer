@@ -57,6 +57,33 @@ onmessage = async (ev) => {
       py.globals.set("IN_TEXT", m.text);
       const out = await py.runPythonAsync("web_api.check_only(IN_TEXT)");
       postMessage({ type: "score", id: m.id, data: JSON.parse(out) });
+    } else if (m.type === "llm_run") {
+      // Server-tərəfli LLM-yenidənyazma addımı — bax: docs/index.html-dəki LLM_ENDPOINT
+      // qeydi. Mətn burada (yalnız bu addımda) endpoint-ə göndərilir; qalan bütün
+      // emal (struktur/səs-küyü) brauzerdə qalır.
+      if (!m.endpoint) {
+        postMessage({ type: "error", id: m.id, message: "LLM addımı hələ aktiv deyil: server endpoint konfiqurasiya olunmayıb." });
+        return;
+      }
+      const resp = await fetch(m.endpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: m.text }),
+      });
+      const respData = await resp.json();
+      if (!resp.ok) {
+        postMessage({ type: "error", id: m.id, message: respData.error || ("Server xətası: " + resp.status) });
+        return;
+      }
+      py.globals.set("IN_ORIG_TEXT", m.text);
+      py.globals.set("IN_LLM_TEXT", respData.rewrittenText);
+      py.globals.set("IN_SEED", m.seed || 1);
+      py.globals.set("IN_FMT", m.fmt || "plain");
+      py.globals.set("IN_NOISE", m.noise !== false);
+      const out = await py.runPythonAsync(
+        "web_api.finalize_llm_text(IN_ORIG_TEXT, IN_LLM_TEXT, int(IN_SEED), IN_FMT, bool(IN_NOISE))"
+      );
+      postMessage({ type: "result", id: m.id, data: JSON.parse(out) });
     }
   } catch (e) {
     postMessage({ type: "error", id: m.id, message: String(e) });
