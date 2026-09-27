@@ -455,6 +455,44 @@ def _fix_spacing(text: str) -> str:
     return text.strip()
 
 
+def _noise_sentence(s: str, rng: random.Random) -> str:
+    """Bir cümləyə təbii, tələsik yazı qüsurları əlavə edir: yalnız orfoqrafik/boşluq
+    səviyyəsində dəyişiklikdir, söz seçimini və mənanı toxunmaz saxlayır."""
+    s = re.sub(r", ", lambda m: "," if rng.random() < 0.65 else ", ", s)
+    if rng.random() < 0.3:
+        w = s.split(" ")
+        if len(w) > 4:
+            j = rng.randint(1, len(w) - 2)
+            w[j] = " " + w[j]
+            s = " ".join(w)
+    if rng.random() < 0.3 and s[:1].isupper():
+        s = s[0].lower() + s[1:]
+    if rng.random() < 0.3 and s.endswith("."):
+        s = s[:-1]
+    return s
+
+
+def inject_typing_noise(text: str, seed: int = 1) -> str:
+    """Real undetectable.ai ölçmələrində sübut olunmuş effekt: qayda-əsaslı dəyişikliklərin
+    özü AI-detektor balını demək olar dəyişmir (bax memory: rule-based-ceiling-confirmed),
+    amma bu kosmetik "səliqəsiz yazı" səs-küyü üzərinə əlavə olunanda balı kəskin aşağı salır.
+    Yalnız başlıq olmayan abzaslara tətbiq olunur, cümlə sərhədlərini pozmur."""
+    rng = random.Random(seed * 97 + 13)
+    out_lines = []
+    for line in text.split("\n"):
+        if not line.strip() or looks_like_heading(line):
+            out_lines.append(line)
+            continue
+        lead = re.match(r"^\s*", line).group(0)
+        sents = split_sentences(line.strip())
+        if not sents:
+            out_lines.append(line)
+            continue
+        noisy = [_noise_sentence(s, rng) for s in sents]
+        out_lines.append(lead + " ".join(noisy))
+    return "\n".join(out_lines)
+
+
 def process_paragraph(sess: Session, paragraph: str, doc_state):
     original = paragraph
     text, store = protect(paragraph, sess.protected_terms)
