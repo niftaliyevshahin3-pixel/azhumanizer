@@ -465,7 +465,9 @@ def _noise_sentence(s: str, rng: random.Random) -> str:
             j = rng.randint(1, len(w) - 2)
             w[j] = " " + w[j]
             s = " ".join(w)
-    if rng.random() < 0.3 and s[:1].isupper():
+    first_word = s.split(" ", 1)[0] if s else ""
+    is_acronym_start = len(first_word) > 1 and first_word[:2].isupper() and first_word[:2].isalpha()
+    if rng.random() < 0.3 and s[:1].isupper() and not is_acronym_start:
         s = s[0].lower() + s[1:]
     if rng.random() < 0.3 and s.endswith("."):
         s = s[:-1]
